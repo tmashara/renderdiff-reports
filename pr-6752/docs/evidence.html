@@ -1,0 +1,678 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'">
+<title>PR 6752 docs CSS cleanup: visual parity</title>
+<style>
+  :root { color-scheme: light dark; --bg:#fff; --fg:#1a1a1a; --mut:#666; --line:#e3e3e3; --card:#fafafa; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181c; --fg:#e8e8e8; --mut:#999; --line:#2c2f36; --card:#1c1f24; } }
+  * { box-sizing: border-box }
+  body { margin:0; padding:2rem; background:var(--bg); color:var(--fg);
+         font:14px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif; }
+  h1 { font-size:1.4rem; margin:0 0 .25rem }
+  h2 { font-size:1.05rem; margin:2.5rem 0 .25rem }
+  .meta { color:var(--mut); font-size:12px; margin:0 0 2rem }
+  .meta code { color:var(--fg) }
+  .blurb { color:var(--mut); margin:.25rem 0 .75rem; max-width:70ch }
+  .agg { margin:.25rem 0 1rem }
+  .good { color:#2e7d32 } .warn { color:#b58900 } .bad { color:#c62828 }
+  .card { border:1px solid var(--line); border-radius:8px; background:var(--card);
+          margin:0 0 1rem; padding:.75rem 1rem 1rem; }
+  .card header { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; margin-bottom:.75rem }
+  .score { font-weight:700; font-variant-numeric:tabular-nums; min-width:4.5rem }
+  .w, .px, .delta, .unstable, .aligned, .hook, .accepted { color:var(--mut); font-size:12px }
+  .findings { font-size:12px; color:var(--mut); margin:0 0 .75rem }
+  .findings p { margin:.25rem 0 0 }
+  .findings ul { margin:.25rem 0; font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace }
+  .crops { display:flex; flex-wrap:wrap; gap:.5rem; margin:.25rem 0 }
+  .crops img { width:auto; max-width:100%; max-height:160px }
+  .findings .add { color:#2e7d32 } .findings .del { color:#c62828 }
+  .unstable { background:rgba(255,0,255,.12); padding:.1rem .4rem; border-radius:4px }
+  .delta { background:rgba(181,137,0,.15); padding:.1rem .4rem; border-radius:4px }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr } }
+  figure { margin:0 }
+  figcaption { color:var(--mut); font-size:11px; text-transform:uppercase;
+               letter-spacing:.05em; margin-bottom:.35rem }
+  img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px;
+        background:#fff; display:block }
+  code { font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace }
+  details { margin:1rem 0; color:var(--mut) }
+  ul { margin:.5rem 0; padding-left:1.25rem }
+</style>
+<style>
+  .banner { font-size:1.2rem; font-weight:700; padding:.6rem 1rem; border-radius:8px;
+            border:2px solid currentColor; margin:0 0 .5rem }
+  .verdict { white-space:pre-wrap; border-left:3px solid var(--line); padding-left:1rem }
+  .crops img { max-height:none }
+  .omitted { font-style:italic }
+</style>
+
+<h1>PR 6752 docs CSS cleanup: visual parity</h1>
+<p class="meta">
+  left <code>http://localhost:4711</code> vs right <code>http://localhost:4710</code><br>
+  2026-10-29T13:59:24.580Z &middot; renderdiff 0.5.0 &middot;
+  widths 1440, 1152, 896, 704, 375 &middot;
+  threshold none &middot;
+  darwin &middot; chromium 156.0.8078.4
+</p>
+
+<div class="banner warn">Not verified</div>
+<p class="blurb">38 shot(s) with unstable pixels</p>
+<p><code>renderdiff: 0 of 49 routes differ (0 of 245 shots), 0 errors, worst 100.00% /docs/latest@1440 — results.json</code></p>
+
+<section><h2>Verdict</h2>
+<div class="verdict">1. Numbers
+renderdiff: 0 of 49 routes differ (0 of 245 shots), 0 errors, worst 100.00%. 5 widths (1440, 1152, 896, 704, 375), --computed on, concurrency 4, 1010 s.
+Left = PR 6752 HEAD 47d3c1c99 (apps/docs/_site, :4711). Right = base gro-1117-styles-step-1-formatting @ 08e5a1f26 (:4710).
+17 routes have rows only because of small unstable pixel counts (9-87 px), all at 100.00%.
+
+2. What I saw
+No pixel differs on any route or width, including the hooked states: header Product and Resources menus open, mobile hamburger open, docs left nav open, mobile TOC popover open, version selector open (latest and v0.30 OldDocsLayout), Inkeep search modal open.
+The unstable pixels are the anti-aliased rounded corners of the header &quot;Get started&quot; button and of the version-notice box. The base-vs-base baseline shows the same pixels, so they vary per load.
+--computed: &quot;dom identical on 2 of 49&quot;. That's because add-params-to-anchors.js rewrites hrefs to absolute URLs that include the port, and url() values resolve per origin. With localhost:4710/4711 normalised, results.json has 0 computed-style findings and 0 one-sided elements.
+Static check: the built HTML differs only in class order on two header divs and in the dropped dead &lt;style&gt; for .category-header (no page uses it). In styles.css, the removed rules are abbr[data-bs-original-title], .col-lg-6, .learn__post a.learn__category__link (plus :hover, h4, p), .learn__article .fillout-container and article .learn__summary. None of those classes or attributes appears in any built page or docs JS.
+
+3. Not verified
+Hidden on both sides: div.gdpr-cookie-notice. It's injected asynchronously, and base-vs-base showed its text rendering differently between loads. It's styled by gdpr.css, which the PR doesn't change.
+--mask-media is on: every iframe is masked.
+Hooks ran on 9 state routes (hook: true).
+/docs/latest/api: Scalar-only page. It doesn't load styles.css and is past the height ceiling.
+/docs/latest/configuring-metabase/environment-variables: past the height ceiling. expressions-list covers the same content type.
+Redirect stubs aren't rendered pages.
+Not shot: other docs pages (a sample of about 16k, one per template era and content type), and hover/focus states other than the two menus.
+Reference is the local base build, not production. Run on macOS.
+
+4. Call
+Parity. Nothing in the docs app renders differently in the sampled routes, widths and states, and the static analysis shows the removed selectors match nothing.</div>
+</section>
+
+<section><h2>Coverage</h2>
+<details><summary>32 clean route(s)</summary>
+<ul><li><code>/docs/v0.65</code></li><li><code>/docs/v0.55</code></li><li><code>/docs/v0.50</code></li><li><code>/docs/v0.47</code></li><li><code>/docs/v0.43</code></li><li><code>/docs/v0.40</code></li><li><code>/docs/v0.35</code></li><li><code>/docs/v0.30</code></li><li><code>/docs/v0.20</code></li><li><code>/docs/v0.12</code></li><li><code>/docs/v0.12/data-warehousing</code></li><li><code>/docs/v0.20/users-guide/01-what-is-metabase</code></li><li><code>/docs/v0.30/users-guide/01-what-is-metabase</code></li><li><code>/docs/v0.35/administration-guide/10-single-sign-on</code></li><li><code>/docs/v0.40/administration-guide/09-setting-up-slack</code></li><li><code>/docs/v0.50/questions/query-builder/expressions</code></li><li><code>/docs/v0.65/questions/introduction</code></li><li><code>/docs/latest/questions/introduction</code></li><li><code>/docs/latest/questions/start</code></li><li><code>/docs/latest/embedding/sdk/introduction</code></li><li><code>/docs/latest/embedding/sdk/api/MetabaseProvider</code></li><li><code>/docs/latest/embedding/sdk/api/useMetabaseAuthStatus</code></li><li><code>/docs/all</code></li><li><code>/docs/404</code></li><li><code>/docs/latest/questions/introduction?state=product-menu</code></li><li><code>/docs/latest/questions/introduction?state=hamburger</code></li><li><code>/docs/latest/questions/introduction?state=version-selector</code></li><li><code>/docs/latest/questions/introduction?state=search</code></li><li><code>/docs/latest/questions/introduction?state=docs-nav</code></li><li><code>/docs/latest/questions/introduction?state=toc</code></li><li><code>/docs/v0.30/users-guide/01-what-is-metabase?state=hamburger</code></li><li><code>/docs/v0.30/users-guide/01-what-is-metabase?state=version-selector</code></li></ul></details>
+
+</section>
+
+
+
+<section><h2>Computed styles</h2><pre class="computed">computed: 53 findings; dom identical on 2 of 49 route(s), differs /docs/latest (705) /docs/v0.65 (719) /docs/v0.60 (694) /docs/v0.55 (687) /docs/v0.50 (654) /docs/v0.47 (645) /docs/v0.44 (625) /docs/v0.43 (524) /docs/v0.40 (406) /docs/v0.35 (406) /docs/v0.30 (390) /docs/v0.20 (387) /docs/v0.12 (387) /docs/v0.12/data-warehousing (386) /docs/v0.20/users-guide/01-what-is-metabase (366) /docs/v0.30/users-guide/01-what-is-metabase (382) /docs/v0.35/administration-guide/10-single-sign-on (371) /docs/v0.40/administration-guide/09-setting-up-slack (368) /docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk (414) /docs/v0.44/questions/sharing/answers (499) /docs/v0.47/questions/sharing/visualizations/numbers (476) /docs/v0.50/questions/query-builder/expressions (490) /docs/v0.52/questions/sharing/alerts (508) /docs/v0.55/troubleshooting-guide/error-message (472) /docs/v0.60/data-modeling/models (524) /docs/v0.65/questions/introduction (506) /docs/latest/questions/introduction (501) /docs/latest/questions/start (484) /docs/latest/developers-guide/devenv (462) /docs/latest/installation-and-operation/serialization (545) /docs/latest/ai/mcp-tools (509) /docs/latest/questions/query-builder/expressions/case (486) /docs/latest/questions/query-builder/expressions-list (694) /docs/latest/questions/visualizations/visualizing-results (539) /docs/latest/dashboards/introduction (551) /docs/latest/embedding/sdk/introduction (528) /docs/all (592) /docs/404 (350) /docs/latest/questions/introduction?state=product-menu (501) /docs/latest/questions/introduction?state=resources-menu (501) /docs/latest/questions/introduction?state=hamburger (501) /docs/latest/questions/introduction?state=version-selector (504) /docs/latest/questions/introduction?state=search (501) /docs/latest/questions/introduction?state=docs-nav (501) /docs/latest/questions/introduction?state=toc (501) /docs/v0.30/users-guide/01-what-is-metabase?state=hamburger (382) /docs/v0.30/users-guide/01-what-is-metabase?state=version-selector (382), so findings there are hints
+  body &gt; div.MB-Documentation.MB-Page &gt; section.bg-white.docs &gt; div.container-docs &gt; div.row:nth-of-type(1) &gt; div.columns.offset-by-one &gt; div.bootstrap &gt; nav[aria-label=&quot;breadcrumb&quot;] &gt; ol.breadcrumb &gt; li.align-items-baseline.breadcrumb-item:nth-of-type(2)::before content url(&quot;http://localhost:4711/images/chevron_blue_right.svg&quot;)→url(&quot;http://localhost:4710/images/chevron_blue_right.svg&quot;)  /docs/v0.43@1440,1152,896,704,375 /docs/v0.40@1440,1152,896,704,375 /docs/v0.35@1440,1152,896,704,375 +11 routes
+  body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.button-style-link-container &gt; a#embed-animation-container &gt; div &gt; div#embed-animation background-image url(&quot;http://localhost:4711/images/navigation-header/embed-background.svg&quot;)→url(&quot;http://localhost:4710/images/navigation-header/embed-background.svg&quot;)  /docs/latest@1440,1152 /docs/v0.65@1440,1152 /docs/v0.60@1440,1152 +29 routes
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; p:nth-of-type(1) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/latest@1440,1152,896 /docs/v0.65@1440,1152,896 /docs/v0.60@1440,1152,896 +13 routes
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div#top-bar &gt; div.container &gt; div:nth-of-type(1) &gt; nav[aria-label=&quot;breadcrumb&quot;].top-bar.trail &gt; ol &gt; li:nth-of-type(2)::before content url(&quot;http://localhost:4711/images/chevron_blue_right.svg&quot;)→url(&quot;http://localhost:4710/images/chevron_blue_right.svg&quot;)  /docs/v0.44/questions/sharing/answers@1440,1152 /docs/v0.47/questions/sharing/visualizations/numbers@1440,1152 /docs/v0.50/questions/query-builder/expressions@1440,1152 +21 routes
+  body &gt; div.MB-Documentation.MB-Page &gt; section.bg-white.docs &gt; div.container-docs &gt; div.row:nth-of-type(1) &gt; div.columns.offset-by-one &gt; div.bootstrap &gt; nav[aria-label=&quot;breadcrumb&quot;] &gt; ol.breadcrumb &gt; li.align-items-baseline.breadcrumb-item:nth-of-type(3)::before content url(&quot;http://localhost:4711/images/chevron_blue_right.svg&quot;)→url(&quot;http://localhost:4710/images/chevron_blue_right.svg&quot;)  /docs/v0.20/users-guide/01-what-is-metabase@1440,1152,896,704,375 /docs/v0.30/users-guide/01-what-is-metabase@1440,1152,896,704,375 /docs/v0.35/administration-guide/10-single-sign-on@1440,1152,896,704,375 +4 routes
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; p:nth-of-type(13) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/v0.65/questions/introduction@1440,1152,896 /docs/latest/questions/introduction@1440,1152,896 /docs/latest/questions/visualizations/visualizing-results@1440,1152,896 +7 routes
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; p:nth-of-type(8) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/v0.44/questions/sharing/answers@1440,1152,896 /docs/v0.65/questions/introduction@1440,1152,896 /docs/latest/questions/introduction@1440,1152,896 +7 routes
+  body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.promo-banner-hidden &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.button-style-link-container &gt; a#embed-animation-container &gt; div &gt; div#embed-animation background-image url(&quot;http://localhost:4711/images/navigation-header/embed-background.svg&quot;)→url(&quot;http://localhost:4710/images/navigation-header/embed-background.svg&quot;)  /docs/v0.43@1440,1152 /docs/v0.40@1440,1152 /docs/v0.35@1440,1152 +12 routes
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; ul:nth-of-type(1) &gt; li:nth-of-type(1) &gt; p &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/v0.65/questions/introduction@1440,1152,896 /docs/latest/questions/introduction@1440,1152,896 /docs/latest/questions/introduction?state=product-menu@1440,1152,896 +6 routes
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; ul:nth-of-type(1) &gt; li:nth-of-type(2) &gt; p:nth-of-type(2) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/v0.65/questions/introduction@1440,1152,896 /docs/latest/questions/introduction@1440,1152,896 /docs/latest/questions/introduction?state=product-menu@1440,1152,896 +6 routes
+  body &gt; header.tsd-page-toolbar &gt; div.container.tsd-toolbar-contents &gt; a[href=&quot;index.html&quot;].title::before background-image url(&quot;http://localhost:4711/images/logo.svg&quot;)→url(&quot;http://localhost:4710/images/logo.svg&quot;)  /docs/latest/embedding/sdk/api/MetabaseProvider@1440,1152,896,704,375 /docs/latest/embedding/sdk/api/useMetabaseAuthStatus@1440,1152,896,704,375
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; p:nth-of-type(2) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/v0.44/questions/sharing/answers@1440,1152,896 /docs/v0.47/questions/sharing/visualizations/numbers@1440,1152,896 /docs/v0.52/questions/sharing/alerts@1440,1152,896
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; p:nth-of-type(20) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/v0.44/questions/sharing/answers@1440,1152,896 /docs/latest/questions/visualizations/visualizing-results@1440,1152,896 /docs/latest/dashboards/introduction@1440,1152,896
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; p:nth-of-type(14) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/v0.44/questions/sharing/answers@1440,1152,896 /docs/v0.52/questions/sharing/alerts@1440,1152,896
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; p:nth-of-type(22) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/latest/questions/visualizations/visualizing-results@1440,1152,896 /docs/latest/dashboards/introduction@1440,1152,896
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; p:nth-of-type(26) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/v0.60/data-modeling/models@1440,1152,896 /docs/latest/questions/visualizations/visualizing-results@1440,1152,896
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; p:nth-of-type(28) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/v0.60/data-modeling/models@1440,1152,896 /docs/latest/questions/visualizations/visualizing-results@1440,1152,896
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; p:nth-of-type(30) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/latest/questions/visualizations/visualizing-results@1440,1152,896 /docs/latest/dashboards/introduction@1440,1152,896
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; p:nth-of-type(32) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/v0.60/data-modeling/models@1440,1152,896 /docs/latest/questions/visualizations/visualizing-results@1440,1152,896
+  body &gt; div &gt; div.bootstrap &gt; div.MB-Page.blog-post &gt; article.learn__post &gt; div:nth-of-type(2) &gt; p:nth-of-type(37) &gt; div.image-wrapper::after content url(&quot;http://localhost:4711/docs/images/expand.svg&quot;)→url(&quot;http://localhost:4710/docs/images/expand.svg&quot;)  /docs/latest/questions/visualizations/visualizing-results@1440,1152,896 /docs/latest/dashboards/introduction@1440,1152,896
+  (+33 more in results.json)
+  unmatched /docs/latest@1440 +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.align-items-center.col-lg-2 &gt; a[href=&quot;http://localhost:4711/&quot;].align-items-center.d-flex +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/data-sources&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/security&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/cloud&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#features-nav-button-desktop &gt; div.align-items-center.d-flex &gt; a[href=&quot;http://localhost:4711/features&quot;] (+35 more)
+  unmatched /docs/v0.65@1440 +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.align-items-center.col-lg-2 &gt; a[href=&quot;http://localhost:4711/&quot;].align-items-center.d-flex +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/data-sources&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/security&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/cloud&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#features-nav-button-desktop &gt; div.align-items-center.d-flex &gt; a[href=&quot;http://localhost:4711/features&quot;] (+35 more)
+  unmatched /docs/v0.60@1440 +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.align-items-center.col-lg-2 &gt; a[href=&quot;http://localhost:4711/&quot;].align-items-center.d-flex +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/data-sources&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/security&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/cloud&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#features-nav-button-desktop &gt; div.align-items-center.d-flex &gt; a[href=&quot;http://localhost:4711/features&quot;] (+35 more)
+  unmatched /docs/v0.55@1440 +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.align-items-center.col-lg-2 &gt; a[href=&quot;http://localhost:4711/&quot;].align-items-center.d-flex +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/data-sources&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/security&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/cloud&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#features-nav-button-desktop &gt; div.align-items-center.d-flex &gt; a[href=&quot;http://localhost:4711/features&quot;] (+35 more)
+  unmatched /docs/v0.50@1440 +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.align-items-center.col-lg-2 &gt; a[href=&quot;http://localhost:4711/&quot;].align-items-center.d-flex +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/data-sources&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/security&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#product-nav-button-desktop &gt; div#product-nav-menu-wrapper &gt; div.nav-menu.overflow-hidden &gt; div.buttons.menu-footer &gt; a[href=&quot;http://localhost:4711/cloud&quot;] +body &gt; div.legacy-scope:nth-of-type(1) &gt; header.bootstrap.hide-on-scroll &gt; div.bg-neutral-white.navigation-header &gt; div.container &gt; div.flex-grow-1.flex-nowrap &gt; div.submenus-container &gt; div#features-nav-button-desktop &gt; div.align-items-center.d-flex &gt; a[href=&quot;http://localhost:4711/features&quot;] (+35 more)
+  (+42 more routes with unmatched elements)</pre></section>
+
+<section><h2>Not clean</h2><article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">55 px unstable</span>
+    
+    <span class="w">dom differs (704)</span>
+    <span class="px">0 / 18,436,320 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.60</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">64 px unstable</span>
+    
+    <span class="w">dom differs (689)</span>
+    <span class="px">0 / 14,253,696 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.44</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">77 px unstable</span>
+    
+    <span class="w">dom differs (625)</span>
+    <span class="px">0 / 12,398,400 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">55 px unstable</span>
+    
+    <span class="w">dom differs (414)</span>
+    <span class="px">0 / 24,639,840 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">55 px unstable</span>
+    
+    <span class="w">dom differs (414)</span>
+    <span class="px">0 / 19,711,872 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk</code>
+    <span class="w">@896px</span>
+    
+    
+    
+    
+    <span class="unstable">37 px unstable</span>
+    
+    <span class="w">dom differs (156)</span>
+    <span class="px">0 / 16,271,360 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk</code>
+    <span class="w">@704px</span>
+    
+    
+    
+    
+    <span class="unstable">37 px unstable</span>
+    
+    <span class="w">dom differs (156)</span>
+    <span class="px">0 / 12,832,512 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk</code>
+    <span class="w">@375px</span>
+    
+    
+    
+    
+    <span class="unstable">37 px unstable</span>
+    
+    <span class="w">dom differs (156)</span>
+    <span class="px">0 / 7,902,750 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.44/questions/sharing/answers</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">33 px unstable</span>
+    
+    <span class="w">dom differs (499)</span>
+    <span class="px">0 / 8,064,000 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.44/questions/sharing/answers</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">87 px unstable</span>
+    
+    <span class="w">dom differs (497)</span>
+    <span class="px">0 / 8,213,760 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.47/questions/sharing/visualizations/numbers</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">9 px unstable</span>
+    
+    <span class="w">dom differs (476)</span>
+    <span class="px">0 / 2,700,000 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.52/questions/sharing/alerts</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">87 px unstable</span>
+    
+    <span class="w">dom differs (506)</span>
+    <span class="px">0 / 11,401,344 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.55/troubleshooting-guide/error-message</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">87 px unstable</span>
+    
+    <span class="w">dom differs (472)</span>
+    <span class="px">0 / 3,636,000 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.55/troubleshooting-guide/error-message</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">87 px unstable</span>
+    
+    <span class="w">dom differs (470)</span>
+    <span class="px">0 / 2,952,576 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.60/data-modeling/models</code>
+    <span class="w">@375px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (180)</span>
+    <span class="px">0 / 6,241,500 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/developers-guide/devenv</code>
+    <span class="w">@375px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (127)</span>
+    <span class="px">0 / 7,031,625 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/installation-and-operation/serialization</code>
+    <span class="w">@896px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (201)</span>
+    <span class="px">0 / 21,840,896 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/installation-and-operation/serialization</code>
+    <span class="w">@704px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (201)</span>
+    <span class="px">0 / 19,690,176 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/installation-and-operation/serialization</code>
+    <span class="w">@375px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (201)</span>
+    <span class="px">0 / 13,182,000 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/ai/mcp-tools</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">55 px unstable</span>
+    
+    <span class="w">dom differs (508)</span>
+    <span class="px">0 / 44,586,720 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/ai/mcp-tools</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">55 px unstable</span>
+    
+    <span class="w">dom differs (509)</span>
+    <span class="px">0 / 54,297,216 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/ai/mcp-tools</code>
+    <span class="w">@896px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (147)</span>
+    <span class="px">0 / 36,391,936 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/ai/mcp-tools</code>
+    <span class="w">@704px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (147)</span>
+    <span class="px">0 / 30,907,712 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/ai/mcp-tools</code>
+    <span class="w">@375px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (147)</span>
+    <span class="px">0 / 19,333,125 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/query-builder/expressions/case</code>
+    <span class="w">@704px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (149)</span>
+    <span class="px">0 / 11,656,128 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/query-builder/expressions/case</code>
+    <span class="w">@375px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (149)</span>
+    <span class="px">0 / 7,149,000 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/query-builder/expressions-list</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">55 px unstable</span>
+    
+    <span class="w">dom differs (694)</span>
+    <span class="px">0 / 47,211,840 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/query-builder/expressions-list</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">55 px unstable</span>
+    
+    <span class="w">dom differs (692)</span>
+    <span class="px">0 / 46,172,160 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/query-builder/expressions-list</code>
+    <span class="w">@375px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (354)</span>
+    <span class="px">0 / 16,594,875 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/visualizations/visualizing-results</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">55 px unstable</span>
+    
+    <span class="w">dom differs (539)</span>
+    <span class="px">0 / 27,400,320 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/visualizations/visualizing-results</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">55 px unstable</span>
+    
+    <span class="w">dom differs (537)</span>
+    <span class="px">0 / 19,062,144 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/visualizations/visualizing-results</code>
+    <span class="w">@375px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (182)</span>
+    <span class="px">0 / 6,308,625 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/dashboards/introduction</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">55 px unstable</span>
+    
+    <span class="w">dom differs (550)</span>
+    <span class="px">0 / 32,821,920 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/dashboards/introduction</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">55 px unstable</span>
+    
+    <span class="w">dom differs (551)</span>
+    <span class="px">0 / 29,822,976 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/dashboards/introduction</code>
+    <span class="w">@896px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (196)</span>
+    <span class="px">0 / 20,826,624 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/dashboards/introduction</code>
+    <span class="w">@704px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (196)</span>
+    <span class="px">0 / 16,659,456 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/dashboards/introduction</code>
+    <span class="w">@375px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    <span class="w">dom differs (196)</span>
+    <span class="px">0 / 10,568,250 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/introduction?state=resources-menu</code>
+    <span class="w">@1152px</span>
+    <span class="hook">before hook</span>
+    
+    
+    
+    <span class="unstable">55 px unstable</span>
+    
+    <span class="w">dom differs (499)</span>
+    <span class="px">0 / 9,619,200 px differ</span>
+  </header></article></section>
+
+
+
+<details>
+  <summary>What was neutralized</summary>
+  <p>Blocked on both sides — analytics, consent, and A/B tooling that would otherwise
+     rewrite the DOM differently on each load:</p>
+  <ul><li><code>**://*.visualwebsiteoptimizer.com/**</code></li><li><code>**://*.googletagmanager.com/**</code></li><li><code>**://*.google-analytics.com/**</code></li><li><code>**://cdn.segment.com/**</code></li><li><code>**://*.intercom.io/**</code></li><li><code>**://*.intercomcdn.com/**</code></li><li><code>**://*.hotjar.com/**</code></li><li><code>**://snap.licdn.com/**</code></li><li><code>**://connect.facebook.net/**</code></li><li><code>**://*.onetrust.com/**</code></li><li><code>**://cdn.cookielaw.org/**</code></li></ul>
+  <p>Masked, because they drift — painted over on both sides, so they can neither pass
+     nor fail:</p>
+  <ul><li>iframes (--mask-media)</li></ul>
+  <p>Pinned on both sides: clock starts at <code>2026-10-29T13:42:00.000Z</code> on every load, a seeded
+     <code>Math.random</code>, timezone <code>UTC</code>, locale
+     <code>en-US</code>, <code>light</code> colour
+     scheme, reduced motion, CSS animations and transitions off, videos kept from playing with video.js overlays hidden.</p>
+  <p>Unstable pixels — ones that changed between two shots of the same load — are painted
+     magenta on both sides, counted on each card, and excluded from the measurement. A route
+     more than 25% unstable is an error.</p>
+  <p>Magenta is also padding where one page is taller or wider than the other. It counts
+     against the score on purpose — see the height delta on the row.</p>
+</details>

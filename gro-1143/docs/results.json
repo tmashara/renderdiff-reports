@@ -1,0 +1,2166 @@
+{
+  "meta": {
+    "tool": "renderdiff",
+    "version": "0.12.0",
+    "generatedAt": "2026-10-30T15:50:23.345Z",
+    "left": "http://localhost:4711",
+    "right": "http://localhost:4710",
+    "widths": [
+      375,
+      600,
+      1000,
+      1100,
+      1240,
+      1440,
+      1600
+    ],
+    "threshold": 0,
+    "clock": "2026-10-30T15:50:00.000Z",
+    "blockUrlPatterns": [
+      "**://*.visualwebsiteoptimizer.com/**",
+      "**://*.googletagmanager.com/**",
+      "**://*.google-analytics.com/**",
+      "**://cdn.segment.com/**",
+      "**://*.intercom.io/**",
+      "**://*.intercomcdn.com/**",
+      "**://*.hotjar.com/**",
+      "**://snap.licdn.com/**",
+      "**://connect.facebook.net/**",
+      "**://*.onetrust.com/**",
+      "**://cdn.cookielaw.org/**",
+      "**://get.geojs.io/**"
+    ],
+    "hideSelectors": [
+      "#onetrust-consent-sdk",
+      ".osano-cm-window",
+      "astro-dev-toolbar",
+      "#astro-dev-toolbar-root",
+      "nextjs-portal",
+      ".gdpr-cookie-notice"
+    ],
+    "masks": [
+      {
+        "reason": "iframes (--mask-media)"
+      }
+    ],
+    "freezeVideo": true,
+    "platform": "darwin",
+    "storageState": {
+      "left": null,
+      "right": null
+    },
+    "browser": {
+      "name": "chromium",
+      "version": "156.0.8078.4"
+    },
+    "config": "51e91e623d919cf7",
+    "rightReplayedFrom": null,
+    "rerun": null
+  },
+  "results": [
+    {"url":"/docs/latest/questions/alerts","left":"/docs/latest/questions/alerts","right":"/docs/latest/questions/alerts","selector":null,"hook":false,"width":375,"status":"compared","score":1,"diffPixels":0,"totalPixels":5123250,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":0,"images":{"left":"docs-latest-questions-alerts.375.left.png","right":"docs-latest-questions-alerts.375.right.png","diff":"docs-latest-questions-alerts.375.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":3,"changes":[],"truncated":0,"unmatched":{"left":["body > div.gdpr-cookie-notice"],"right":["body > div#gdpr-outer-container"]}}},
+    {"url":"/docs/latest/questions/alerts","left":"/docs/latest/questions/alerts","right":"/docs/latest/questions/alerts","selector":null,"hook":false,"width":600,"status":"compared","score":1,"diffPixels":0,"totalPixels":6303600,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":0,"images":{"left":"docs-latest-questions-alerts.600.left.png","right":"docs-latest-questions-alerts.600.right.png","diff":"docs-latest-questions-alerts.600.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":0,"changes":[],"truncated":0,"unmatched":{"left":[],"right":[]}}},
+    {"url":"/docs/latest/questions/alerts","left":"/docs/latest/questions/alerts","right":"/docs/latest/questions/alerts","selector":null,"hook":false,"width":1000,"status":"compared","score":0.7601,"diffPixels":2827484,"totalPixels":11787000,"heightDelta":-2515,"widthDelta":0,"regions":[{"x":160,"y":3104,"w":688,"h":656,"pixels":29468,"hash":"d03448cc","elements":[{"selector":"ol:nth-of-type(2)","side":"both","left":{"x":161,"y":3401,"w":678,"h":510},"right":{"x":338,"y":4234,"w":382,"h":810},"changed":{"width":["678px","382px"],"height":["510px","810px"]},"text":"Create a line, area, or bar chart displa"},{"selector":"p:nth-of-type(15)","side":"both","left":{"x":161,"y":3219,"w":678,"h":120},"right":{"x":338,"y":3932,"w":382,"h":210},"changed":{"width":["678px","382px"],"height":["120px","210px"]},"text":"Goal line alerts are useful when you’re "},{"selector":"div.copy-clip-container.h2:nth-of-type(7)","side":"both","left":{"x":161,"y":3084,"w":678,"h":65},"right":{"x":338,"y":3797,"w":382,"h":65},"changed":{"width":["678px","382px"]},"text":"Goal line alerts"}]},{"x":176,"y":912,"w":672,"h":288,"pixels":27605,"hash":"57974f10","elements":[{"selector":"div.image-wrapper > img","side":"left","left":{"x":161,"y":915,"w":678,"h":288},"right":null,"changed":{},"text":""},{"selector":"p:nth-of-type(5)","side":"right","left":null,"right":{"x":338,"y":982,"w":382,"h":226},"changed":{},"text":""},{"selector":"div.copy-clip-container.h2:nth-of-type(3)","side":"both","left":{"x":161,"y":804,"w":678,"h":65},"right":{"x":338,"y":892,"w":382,"h":65},"changed":{"width":["678px","382px"]},"text":"Creating an alert"}]},{"x":160,"y":6112,"w":688,"h":656,"pixels":27128,"hash":"5164f905","elements":[{"selector":"p:nth-of-type(26)","side":"both","left":{"x":161,"y":6228,"w":678,"h":120},"right":{"x":338,"y":8177,"w":382,"h":240},"changed":{"width":["678px","382px"],"height":["120px","240px"]},"text":"Alerts will continue to work even if the"},{"selector":"ul:nth-of-type(6)","side":"both","left":{"x":161,"y":6008,"w":678,"h":204},"right":{"x":338,"y":7807,"w":382,"h":354},"changed":{"width":["678px","382px"],"height":["204px","354px"]},"text":"You rename the target Slack channel. Wel"},{"selector":"article.learn__post > div:nth-of-type(2) > div.bootstrap","side":"both","left":{"x":161,"y":6509,"w":678,"h":98},"right":{"x":338,"y":8578,"w":382,"h":122},"changed":{"width":["678px","382px"],"height":["98px","122px"]},"text":"Usage analytics is only available on Pro"}]},{"x":160,"y":3936,"w":688,"h":688,"pixels":22878,"hash":"fcb74668","elements":[{"selector":"ol:nth-of-type(3)","side":"both","left":{"x":161,"y":4187,"w":678,"h":198},"right":{"x":338,"y":5349,"w":382,"h":258},"changed":{"width":["678px","382px"],"height":["198px","258px"]},"text":"Create a question that returns a single "},{"selector":"div:nth-of-type(2) > ul:nth-of-type(2)","side":"both","left":{"x":161,"y":4447,"w":678,"h":144},"right":{"x":338,"y":5699,"w":382,"h":234},"changed":{"width":["678px","382px"],"height":["144px","234px"]},"text":"Whether to alert when the progress bar r"},{"selector":"div.copy-clip-container.h2:nth-of-type(8)","side":"both","left":{"x":161,"y":3975,"w":678,"h":65},"right":{"x":338,"y":5108,"w":382,"h":65},"changed":{"width":["678px","382px"]},"text":"Progress bar alerts"}]},{"x":32,"y":160,"w":928,"h":464,"pixels":20286,"hash":"11957abd","elements":[{"selector":"div.copy-clip-container.h2:nth-of-type(2)","side":"both","left":{"x":161,"y":415,"w":678,"h":65},"right":{"x":338,"y":443,"w":382,"h":65},"changed":{"width":["678px","382px"]},"text":"Prerequisite for alerts"},{"selector":"article.learn__post > div:nth-of-type(2) > p:nth-of-type(1)","side":"both","left":{"x":161,"y":215,"w":678,"h":60},"right":{"x":338,"y":213,"w":382,"h":60},"changed":{"width":["678px","382px"]},"text":"Set up an alert to send the results of q"},{"selector":"article.learn__post > div:nth-of-type(2) > p:nth-of-type(2)","side":"both","left":{"x":161,"y":291,"w":678,"h":60},"right":{"x":338,"y":289,"w":382,"h":90},"changed":{"width":["678px","382px"],"height":["60px","90px"]},"text":"Alerts are for questions only. If you in"}]},{"x":160,"y":4640,"w":688,"h":400,"pixels":16738,"hash":"d5c9b776"},{"x":160,"y":7264,"w":688,"h":304,"pixels":15052,"hash":"0ede8c37"},{"x":160,"y":2512,"w":688,"h":272,"pixels":13896,"hash":"461185b3"},{"x":160,"y":1568,"w":688,"h":288,"pixels":13831,"hash":"b771dedd"},{"x":160,"y":7728,"w":688,"h":432,"pixels":11761,"hash":"da88b568"},{"x":160,"y":1856,"w":688,"h":256,"pixels":9723,"hash":"bdaa8b1d"},{"x":0,"y":0,"w":1000,"h":128,"pixels":9674,"hash":"bfcf2249"},{"x":256,"y":8176,"w":480,"h":352,"pixels":9560,"hash":"6f789eeb"},{"x":160,"y":1312,"w":672,"h":256,"pixels":8910,"hash":"55a05e00"},{"x":160,"y":2256,"w":624,"h":176,"pixels":7268,"hash":"bd9ff660"},{"x":160,"y":5696,"w":672,"h":160,"pixels":7056,"hash":"1ddf9181"},{"x":160,"y":6016,"w":672,"h":80,"pixels":6070,"hash":"d8df6211"},{"x":160,"y":2800,"w":672,"h":144,"pixels":6001,"hash":"a41c8028"},{"x":160,"y":6784,"w":688,"h":144,"pixels":5694,"hash":"0434543f"},{"x":160,"y":2928,"w":656,"h":192,"pixels":5507,"hash":"b36605e7"},{"x":160,"y":5552,"w":688,"h":128,"pixels":5024,"hash":"5a6252ae"},{"x":160,"y":7584,"w":608,"h":128,"pixels":4133,"hash":"99b2ec8d"},{"x":160,"y":736,"w":800,"h":144,"pixels":4127,"hash":"e7bebc90"},{"x":176,"y":3776,"w":656,"h":96,"pixels":4099,"hash":"87c93701"},{"x":160,"y":5248,"w":672,"h":80,"pixels":3738,"hash":"9741a3b3"},{"x":160,"y":5088,"w":672,"h":96,"pixels":3589,"hash":"22e4993b"},{"x":160,"y":7072,"w":688,"h":64,"pixels":3449,"hash":"04b6a0dd"},{"x":336,"y":8736,"w":384,"h":144,"pixels":3133,"hash":"8cdd41f8"},{"x":160,"y":5872,"w":688,"h":80,"pixels":3093,"hash":"0a629888"},{"x":336,"y":8576,"w":384,"h":128,"pixels":2625,"hash":"ed3a13bd"},{"x":160,"y":5200,"w":688,"h":32,"pixels":2463,"hash":"4bc98995"},{"x":0,"y":9184,"w":1000,"h":88,"pixels":2417,"hash":"5f594b39"},{"x":48,"y":672,"w":624,"h":80,"pixels":2084,"hash":"bde9e753"},{"x":160,"y":3888,"w":544,"h":32,"pixels":2057,"hash":"306aad88"},{"x":160,"y":5344,"w":512,"h":64,"pixels":1787,"hash":"08ad0fbf"},{"x":160,"y":6976,"w":496,"h":32,"pixels":1744,"hash":"9a79f6fc"},{"x":16,"y":8928,"w":176,"h":192,"pixels":1740,"hash":"d5e4a4df"},{"x":816,"y":8240,"w":128,"h":160,"pixels":1680,"hash":"b20df839"},{"x":160,"y":7152,"w":448,"h":32,"pixels":1670,"hash":"604bfa64"},{"x":160,"y":6928,"w":416,"h":32,"pixels":1602,"hash":"4c9925a2"},{"x":160,"y":2192,"w":688,"h":48,"pixels":1585,"hash":"30837151"},{"x":336,"y":8960,"w":304,"h":64,"pixels":1313,"hash":"71b388c5"},{"x":160,"y":5424,"w":496,"h":32,"pixels":1286,"hash":"8eeaad98"},{"x":160,"y":2448,"w":688,"h":48,"pixels":1230,"hash":"bfb66b45"},{"x":160,"y":5472,"w":544,"h":16,"pixels":1209,"hash":"0b4fa282"},{"x":32,"y":16,"w":272,"h":48,"pixels":1059,"hash":"dad75df6"},{"x":336,"y":9120,"w":272,"h":48,"pixels":1059,"hash":"9699effe"},{"x":160,"y":5968,"w":496,"h":32,"pixels":943,"hash":"cd02babb"},{"x":160,"y":7888,"w":160,"h":64,"pixels":811,"hash":"9fee4446"},{"x":336,"y":2176,"w":240,"h":32,"pixels":806,"hash":"d802428a"},{"x":816,"y":9216,"w":160,"h":32,"pixels":797,"hash":"fee0cb25"},{"x":160,"y":5504,"w":368,"h":32,"pixels":793,"hash":"1f76c18e"},{"x":160,"y":160,"w":112,"h":48,"pixels":700,"hash":"99e0e482"},{"x":16,"y":8640,"w":128,"h":160,"pixels":668,"hash":"287edbd1"},{"x":336,"y":9072,"w":240,"h":32,"pixels":615,"hash":"e50baa83"},{"x":336,"y":7024,"w":336,"h":32,"pixels":589,"hash":"b4a0c835"},{"x":48,"y":720,"w":80,"h":128,"pixels":511,"hash":"7fbeffd7"},{"x":160,"y":960,"w":112,"h":48,"pixels":480,"hash":"a5ab1706"},{"x":16,"y":8304,"w":96,"h":128,"pixels":435,"hash":"dc1b644a"},{"x":160,"y":7840,"w":160,"h":32,"pixels":409,"hash":"63a4f5df"},{"x":336,"y":8544,"w":384,"h":16,"pixels":382,"hash":"e37d5ce3"},{"x":336,"y":9040,"w":384,"h":16,"pixels":382,"hash":"618b8ce3"},{"x":336,"y":96,"w":144,"h":16,"pixels":368,"hash":"550037fd"},{"x":752,"y":656,"w":176,"h":32,"pixels":345,"hash":"cb7ea345"},{"x":160,"y":576,"w":80,"h":80,"pixels":332,"hash":"e05295b3"},{"x":752,"y":624,"w":160,"h":16,"pixels":307,"hash":"c2bfef59"},{"x":336,"y":1264,"w":192,"h":32,"pixels":303,"hash":"004b2d13"},{"x":16,"y":9216,"w":160,"h":32,"pixels":296,"hash":"4e0dea74"},{"x":176,"y":1024,"w":48,"h":64,"pixels":259,"hash":"338b3da3"},{"x":16,"y":8848,"w":144,"h":16,"pixels":248,"hash":"87df26be"},{"x":816,"y":8528,"w":144,"h":16,"pixels":246,"hash":"4a74aad2"},{"x":160,"y":1264,"w":144,"h":32,"pixels":219,"hash":"5df2544f"},{"x":336,"y":1232,"w":144,"h":16,"pixels":218,"hash":"32bb4cbf"},{"x":160,"y":1808,"w":128,"h":32,"pixels":213,"hash":"15ce63cf"},{"x":512,"y":32,"w":96,"h":16,"pixels":204,"hash":"a5eb4de5"},{"x":752,"y":256,"w":112,"h":16,"pixels":200,"hash":"a0da2dfc"},{"x":160,"y":1200,"w":112,"h":16,"pixels":188,"hash":"a3d81a7b"},{"x":176,"y":3664,"w":144,"h":16,"pixels":185,"hash":"f4188394"},{"x":48,"y":864,"w":96,"h":16,"pixels":183,"hash":"5bb72943"},{"x":320,"y":32,"w":80,"h":16,"pixels":181,"hash":"6c9f28ca"},{"x":816,"y":8464,"w":112,"h":16,"pixels":179,"hash":"7cde1075"},{"x":16,"y":8896,"w":112,"h":16,"pixels":178,"hash":"1544bda3"},{"x":160,"y":4816,"w":80,"h":32,"pixels":158,"hash":"d2a079fc"},{"x":48,"y":640,"w":80,"h":16,"pixels":157,"hash":"e9bd6b1a"},{"x":336,"y":640,"w":80,"h":32,"pixels":152,"hash":"6b630599"},{"x":16,"y":8272,"w":96,"h":16,"pixels":144,"hash":"9a042229"},{"x":16,"y":8240,"w":96,"h":16,"pixels":142,"hash":"f05c2da8"},{"x":16,"y":8528,"w":96,"h":16,"pixels":139,"hash":"2509d99e"},{"x":272,"y":8432,"w":64,"h":16,"pixels":137,"hash":"e2c816ed"},{"x":48,"y":160,"w":80,"h":16,"pixels":133,"hash":"07e41dee"},{"x":48,"y":576,"w":80,"h":16,"pixels":131,"hash":"a2d3291c"},{"x":816,"y":8208,"w":80,"h":16,"pixels":120,"hash":"27ae8106"},{"x":160,"y":5040,"w":64,"h":32,"pixels":117,"hash":"425e0d8e"},{"x":16,"y":8208,"w":80,"h":16,"pixels":111,"hash":"e3242add"},{"x":16,"y":8448,"w":64,"h":32,"pixels":109,"hash":"5e142f94"},{"x":160,"y":8016,"w":112,"h":16,"pixels":105,"hash":"dc9267c5"},{"x":816,"y":8560,"w":64,"h":16,"pixels":94,"hash":"dfe0346b"},{"x":16,"y":8816,"w":64,"h":16,"pixels":91,"hash":"811aaf0a"},{"x":816,"y":8416,"w":80,"h":32,"pixels":87,"hash":"29fba3ca"},{"x":432,"y":32,"w":64,"h":16,"pixels":80,"hash":"5eb7239d"},{"x":816,"y":8496,"w":48,"h":16,"pixels":75,"hash":"3c7bd0b6"},{"x":16,"y":8496,"w":48,"h":16,"pixels":73,"hash":"f20cc0f7"},{"x":176,"y":4528,"w":48,"h":16,"pixels":71,"hash":"e1cf938d"},{"x":816,"y":1216,"w":32,"h":32,"pixels":34,"hash":"54a5bb13"},{"x":48,"y":608,"w":16,"h":16,"pixels":30,"hash":"c7be17d8"},{"x":48,"y":896,"w":32,"h":16,"pixels":18,"hash":"aa07684a"},{"x":224,"y":368,"w":16,"h":16,"pixels":10,"hash":"c2ce8c30"},{"x":224,"y":896,"w":16,"h":16,"pixels":4,"hash":"cfa1ea45"}],"bands":null,"alignedScore":null,"text":{"added":["On this page"],"removed":["Product","Business Intelligence","Self-service analytics for your team","Embedded Analytics","Fast, flexible customer-facing analytics","Data sources","Security","Cloud","Features","Metabase AI","Data Studio New","Dashboards and reporting","Query builder","Data segregation","Usage analytics","Embedded analytics SDK","White-label analytics","Drill-through","SQL editor","Permissions","CSV upload","What’s new","Roadmap","Docs","Documentation","The Metabase manual","Learn","Guides and tutorials","GETTING STARTED","Querying and Dashboards","Everyone exploring and analyzing data","Embedding","Developers building in-product analytics","Administration","People running their company’s instance","GUIDES","Installing MetabaseAdding a databaseAsking questionsCreating a dashboardSolving common problems","Resources","Blog","News, updates, and ideas","Events","Join a live event or watch on demand","Customers","Real companies, real data, real stories","Discussion","Share and connect with other users","Professional Services","Extra help from our team","Metabase Experts","Find a local expert","Pricing","Business Intelligence pricing","Self-service analytics for your team","Embedded Analytics pricing","Fast, flexible customer-facing analytics","Log in","ANALYTICS","Getting started","Metabase concepts","Queries and charts","Introduction","Query builder","SQL and native queries","Visualizations","Metrics explorer","Alerts","Exporting data","Dashboards","Documents","AI","Organization","DATA MODELING","Overview","Data studio","Transforms","Metadata","Semantic layer","Tools","Editable tables","Models","EMBEDDING","Overview","Modular embedding","Full app embedding","Public links and embeds","Securing embeds","AI agent resources","ADMINISTRATION","Installation","Data sources","Configuration","Operations and monitoring","Authentication","Permissions","Security","OTHER RESOURCES","API","Metabase Cloud","Billing","Troubleshooting","Developer guide","Pro and Enterprise features","Accessibility","Supported browsers","Privacy","About the anonymous usage data we collect","v0.64","Prerequisite for alerts","Creating an alert","Send a one-time alert","Testing alerts","Results alerts","Goal line alerts","Progress bar alerts","Editing, deleting, and unsubscribing from alerts","Avoid changing the name of the alerted channel in Slack","Alert expiration and special cases","Admins can see all alerts","How permissions work with alerts","Removing Metabase branding from alerts","Alerts in embedded questions exclude links","Custom visualizations fall back to the default chart","Further reading","Was this helpful?","Yes","No","Want to improve these docs? Propose a change."]},"unstablePixels":0,"images":{"left":"docs-latest-questions-alerts.1000.left.png","right":"docs-latest-questions-alerts.1000.right.png","diff":"docs-latest-questions-alerts.1000.diff.png"},"crops":[{"path":"docs-latest-questions-alerts.1000.c1.png","kind":"region","left":{"x":160,"y":3104,"w":688,"h":656},"right":{"x":160,"y":3104,"w":688,"h":656},"layout":"stacked","scale":1,"clipped":false},{"path":"docs-latest-questions-alerts.1000.c2.png","kind":"region","left":{"x":176,"y":912,"w":672,"h":288},"right":{"x":176,"y":912,"w":672,"h":288},"layout":"stacked","scale":1,"clipped":false},{"path":"docs-latest-questions-alerts.1000.c3.png","kind":"region","left":{"x":160,"y":6112,"w":688,"h":656},"right":{"x":160,"y":6112,"w":688,"h":656},"layout":"stacked","scale":1,"clipped":false}],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":0,"changes":[{"key":"body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container","prop":"padding-top","values":["5px","16px"]},{"key":"body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container","prop":"padding-bottom","values":["5px","16px"]},{"key":"body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container","prop":"width","values":["720px","960px"]},{"key":"body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap::after","prop":"height","values":["46px","42px"]},{"key":"body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.align-items-center.col-lg-2 > a[href=\"http://localhost:4710/\"].align-items-center.d-flex > svg","prop":"height","values":["22px","32px"]},{"key":"body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.submenus-container","prop":"display","values":["none","flex"]},{"key":"body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.align-items-center.col-lg-3 > a[href=\"http://localhost:4710/cloud/login\"].Button.btn","prop":"display","values":["none","block"]},{"key":"body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.align-items-center.col-lg-3 > a#get-started-btn","prop":"margin-left","values":["0px","8px"]},{"key":"body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.align-items-center.col-lg-3 > a#get-started-btn","prop":"border-top-left-radius","values":["8px","12px"]},{"key":"body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.align-items-center.col-lg-3 > a#get-started-btn","prop":"height","values":["36px","42px"]},{"key":"body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.align-items-center.col-lg-3 > button#mobile-nav-hamburger-wrapper","prop":"display","values":["block","none"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post","prop":"grid-template-columns","values":["678px","226px 694px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post","prop":"box-shadow","values":["rgb(250, 251, 254) -400px 0px 0px 0px, rgb(250, 251, 254) 400px 0px 0px 0px","rgb(250, 251, 254) 600px 0px 0px 0px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post","prop":"width","values":["678px","920px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content","prop":"position","values":["fixed","sticky"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content","prop":"padding-top","values":["0px","80px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content","prop":"padding-right","values":["0px","10px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content","prop":"border-right-width","values":["0px","1px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content","prop":"visibility","values":["hidden","visible"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content","prop":"z-index","values":["10001","auto"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content","prop":"width","values":["320px","226px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content","prop":"height","values":["900px","826px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content::before","prop":"content","values":["\"\"","none"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div","prop":"position","values":["relative","static"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div","prop":"padding-top","values":["40px","0px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div","prop":"padding-right","values":["20px","0px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div","prop":"padding-bottom","values":["24px","0px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div","prop":"padding-left","values":["20px","0px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div","prop":"border-right-width","values":["1px","0px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div","prop":"background-color","values":["rgb(255, 255, 255)","rgba(0, 0, 0, 0)"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div","prop":"height","values":["900px","1784.5px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post","prop":"grid-template-columns","values":["678px","422px 200px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post","prop":"padding-top","values":["40px","56px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post","prop":"padding-left","values":["0px","72px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar","prop":"position","values":["fixed","absolute"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar","prop":"padding-top","values":["0px","8px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar","prop":"padding-bottom","values":["0px","8px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar","prop":"padding-left","values":["0px","8px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar","prop":"background-color","values":["rgb(255, 255, 255)","rgba(0, 0, 0, 0)"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar","prop":"z-index","values":["5","3"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar","prop":"height","values":["40px","57px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container","prop":"display","values":["flex","contents"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container","prop":"align-items","values":["center","normal"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container","prop":"gap","values":["8px","normal"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container","prop":"padding-right","values":["12px","28px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container","prop":"padding-left","values":["12px","28px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(1)","prop":"display","values":["contents","flex"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(1)","prop":"height","values":["auto","30px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(1) > button[aria-label=\"Open docs navigation\"].d-lg-none.docs-nav-toggle","prop":"display","values":["flex","none"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(1) > nav[aria-label=\"breadcrumb\"].top-bar.trail","prop":"display","values":["none","block"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(2)","prop":"display","values":["contents","flex"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(2)","prop":"height","values":["auto","40px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(2) > div.top-bar","prop":"display","values":["none","flex"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(2) > button.toc-toggle","prop":"display","values":["flex","none"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(2) > div#inkeep","prop":"background-color","values":["rgba(0, 0, 0, 0)","rgb(250, 251, 254)"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(2) > div#inkeep","prop":"width","values":["34px","140px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2)","prop":"padding-right","values":["0px","40px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > nav[aria-label=\"breadcrumb\"].inline.trail","prop":"display","values":["block","none"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(2)","prop":"height","values":["60px","90px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(3)","prop":"height","values":["60px","90px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(4)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(5) > div.image-wrapper > img","prop":"height","values":["287.656px","162.062px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(2)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(4) > ul > li:nth-of-type(1)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(4) > ul > li:nth-of-type(2)","prop":"height","values":["60px","90px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(4) > ul > li:nth-of-type(3)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(5)","prop":"height","values":["60px","120px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(6)","prop":"height","values":["60px","120px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(7)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(7)","prop":"height","values":["120px","180px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(8)","prop":"height","values":["60px","120px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(9)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(10)","prop":"height","values":["90px","180px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(11)","prop":"height","values":["152px","242px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(12)","prop":"height","values":["150px","240px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(13)","prop":"height","values":["60px","90px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(15)","prop":"height","values":["120px","210px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(16)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(1) > p","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(2) > p","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(3) > p","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(4) > p","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(6) > p:nth-of-type(1)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(6) > ul > li:nth-of-type(1)","prop":"height","values":["60px","90px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(6) > ul > li:nth-of-type(2)","prop":"height","values":["60px","120px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(6) > ul > li:nth-of-type(3)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(7) > p","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(18)","prop":"height","values":["60px","90px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(3) > li:nth-of-type(1)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(3) > li:nth-of-type(5)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(19)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(2) > li:nth-of-type(1)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(2) > li:nth-of-type(2)","prop":"height","values":["60px","90px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(2) > li:nth-of-type(3)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(9) > h2#editing-deleting-and-unsubscribing-from-alerts","prop":"height","values":["32.1562px","64.3125px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(9) > a.copy-clip.d-flex > svg.share-button","prop":"width","values":["32px","22.4688px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(20)","prop":"height","values":["60px","120px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(3) > li:nth-of-type(1)","prop":"height","values":["60px","90px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(3) > li:nth-of-type(2)","prop":"height","values":["90px","150px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(4) > li:nth-of-type(1) > p","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(4) > li:nth-of-type(2) > p","prop":"height","values":["60px","90px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(4) > li:nth-of-type(3) > p","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(4) > li:nth-of-type(4) > p","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(10) > h2#avoid-changing-the-name-of-the-alerted-channel-in-slack","prop":"height","values":["32.1562px","64.3125px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(10) > a.copy-clip.d-flex > svg.share-button","prop":"width","values":["32px","19.1875px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(24)","prop":"height","values":["120px","180px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(11) > h2#alert-expiration-and-special-cases","prop":"height","values":["32.1562px","64.3125px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(11) > a.copy-clip.d-flex > svg.share-button","prop":"width","values":["32px","30.8594px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(25)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(6) > li:nth-of-type(1)","prop":"height","values":["90px","180px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(6) > li:nth-of-type(2)","prop":"height","values":["60px","90px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(6) > li:nth-of-type(3)","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(26)","prop":"height","values":["120px","240px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.bootstrap > div.bg-blue-95.border > p.m-0.ms-2","prop":"height","values":["48px","72px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(27)","prop":"height","values":["90px","150px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(14) > h2#how-permissions-work-with-alerts","prop":"height","values":["32.1562px","64.3125px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(14) > a.copy-clip.d-flex > svg.share-button","prop":"width","values":["32px","30.2969px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h3 > h3#sending-alerts-to-private-slack-channels","prop":"height","values":["28px","56px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h3 > a.copy-clip.d-flex > svg.share-button","prop":"width","values":["32px","31.2031px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(29) > a","prop":"height","values":["30px","60px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(16) > h2#removing-metabase-branding-from-alerts","prop":"height","values":["32.1562px","64.3125px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(16) > a.copy-clip.d-flex > svg.share-button","prop":"width","values":["32px","25.2656px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(17) > h2#alerts-in-embedded-questions-exclude-links","prop":"height","values":["32.1562px","64.3125px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(17) > a.copy-clip.d-flex > svg.share-button","prop":"width","values":["32px","24.3438px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(31)","prop":"height","values":["90px","150px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(18) > h2#custom-visualizations-fall-back-to-the-default-chart","prop":"height","values":["32.1562px","64.3125px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(18) > a.copy-clip.d-flex > svg.share-button","prop":"width","values":["32px","20.9375px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(32)","prop":"height","values":["60px","120px"]},{"key":"body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(3)","prop":"display","values":["none","block"]},{"key":"body > div.bootstrap.image-zoom-wrapper > div.container","prop":"width","values":["720px","960px"]}],"truncated":0,"unmatched":{"left":[],"right":[]}}},
+    {"url":"/docs/latest/questions/alerts","left":"/docs/latest/questions/alerts","right":"/docs/latest/questions/alerts","selector":null,"hook":false,"width":1100,"status":"compared","score":1,"diffPixels":0,"totalPixels":12482800,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":0,"images":{"left":"docs-latest-questions-alerts.1100.left.png","right":"docs-latest-questions-alerts.1100.right.png","diff":"docs-latest-questions-alerts.1100.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":0,"changes":[],"truncated":0,"unmatched":{"left":[],"right":[]}}},
+    {"url":"/docs/latest/questions/alerts","left":"/docs/latest/questions/alerts","right":"/docs/latest/questions/alerts","selector":null,"hook":false,"width":1240,"status":"compared","score":1,"diffPixels":0,"totalPixels":12108600,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":0,"images":{"left":"docs-latest-questions-alerts.1240.left.png","right":"docs-latest-questions-alerts.1240.right.png","diff":"docs-latest-questions-alerts.1240.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":0,"changes":[],"truncated":0,"unmatched":{"left":[],"right":[]}}},
+    {"url":"/docs/latest/questions/alerts","left":"/docs/latest/questions/alerts","right":"/docs/latest/questions/alerts","selector":null,"hook":false,"width":1440,"status":"compared","score":1,"diffPixels":0,"totalPixels":12650400,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":0,"images":{"left":"docs-latest-questions-alerts.1440.left.png","right":"docs-latest-questions-alerts.1440.right.png","diff":"docs-latest-questions-alerts.1440.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":6,"changes":[],"truncated":0,"unmatched":{"left":["body > div.gdpr-cookie-notice"],"right":["body > div#gdpr-outer-container"]}}},
+    {"url":"/docs/latest/questions/alerts","left":"/docs/latest/questions/alerts","right":"/docs/latest/questions/alerts","selector":null,"hook":false,"width":1600,"status":"compared","score":1,"diffPixels":0,"totalPixels":14056000,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":0,"images":{"left":"docs-latest-questions-alerts.1600.left.png","right":"docs-latest-questions-alerts.1600.right.png","diff":"docs-latest-questions-alerts.1600.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":5,"changes":[],"truncated":0,"unmatched":{"left":["body > div.gdpr-cookie-notice"],"right":["body > div#gdpr-outer-container"]}}}
+  ],
+  "summary": {
+    "compared": 7,
+    "errors": 0,
+    "mean": 0.9657,
+    "worst": {
+      "url": "/docs/latest/questions/alerts",
+      "width": 1000,
+      "score": 0.7601
+    },
+    "belowThreshold": 0,
+    "differing": 1,
+    "accepted": 0,
+    "stale": [],
+    "findings": [],
+    "computed": [
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post",
+        "prop": "grid-template-columns",
+        "values": [
+          "678px",
+          "226px 694px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post",
+        "prop": "box-shadow",
+        "values": [
+          "rgb(250, 251, 254) -400px 0px 0px 0px, rgb(250, 251, 254) 400px 0px 0px 0px",
+          "rgb(250, 251, 254) 600px 0px 0px 0px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post",
+        "prop": "width",
+        "values": [
+          "678px",
+          "920px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post",
+        "prop": "grid-template-columns",
+        "values": [
+          "678px",
+          "422px 200px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post",
+        "prop": "padding-top",
+        "values": [
+          "40px",
+          "56px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post",
+        "prop": "padding-left",
+        "values": [
+          "0px",
+          "72px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2)",
+        "prop": "padding-right",
+        "values": [
+          "0px",
+          "40px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.bootstrap > div.bg-blue-95.border > p.m-0.ms-2",
+        "prop": "height",
+        "values": [
+          "48px",
+          "72px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(10) > a.copy-clip.d-flex > svg.share-button",
+        "prop": "width",
+        "values": [
+          "32px",
+          "19.1875px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(10) > h2#avoid-changing-the-name-of-the-alerted-channel-in-slack",
+        "prop": "height",
+        "values": [
+          "32.1562px",
+          "64.3125px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(11) > a.copy-clip.d-flex > svg.share-button",
+        "prop": "width",
+        "values": [
+          "32px",
+          "30.8594px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(11) > h2#alert-expiration-and-special-cases",
+        "prop": "height",
+        "values": [
+          "32.1562px",
+          "64.3125px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(14) > a.copy-clip.d-flex > svg.share-button",
+        "prop": "width",
+        "values": [
+          "32px",
+          "30.2969px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(14) > h2#how-permissions-work-with-alerts",
+        "prop": "height",
+        "values": [
+          "32.1562px",
+          "64.3125px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(16) > a.copy-clip.d-flex > svg.share-button",
+        "prop": "width",
+        "values": [
+          "32px",
+          "25.2656px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(16) > h2#removing-metabase-branding-from-alerts",
+        "prop": "height",
+        "values": [
+          "32.1562px",
+          "64.3125px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(17) > a.copy-clip.d-flex > svg.share-button",
+        "prop": "width",
+        "values": [
+          "32px",
+          "24.3438px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(17) > h2#alerts-in-embedded-questions-exclude-links",
+        "prop": "height",
+        "values": [
+          "32.1562px",
+          "64.3125px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(18) > a.copy-clip.d-flex > svg.share-button",
+        "prop": "width",
+        "values": [
+          "32px",
+          "20.9375px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(18) > h2#custom-visualizations-fall-back-to-the-default-chart",
+        "prop": "height",
+        "values": [
+          "32.1562px",
+          "64.3125px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(9) > a.copy-clip.d-flex > svg.share-button",
+        "prop": "width",
+        "values": [
+          "32px",
+          "22.4688px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h2:nth-of-type(9) > h2#editing-deleting-and-unsubscribing-from-alerts",
+        "prop": "height",
+        "values": [
+          "32.1562px",
+          "64.3125px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h3 > a.copy-clip.d-flex > svg.share-button",
+        "prop": "width",
+        "values": [
+          "32px",
+          "31.2031px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > div.copy-clip-container.h3 > h3#sending-alerts-to-private-slack-channels",
+        "prop": "height",
+        "values": [
+          "28px",
+          "56px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > nav[aria-label=\"breadcrumb\"].inline.trail",
+        "prop": "display",
+        "values": [
+          "block",
+          "none"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(2)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(4) > ul > li:nth-of-type(1)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(4) > ul > li:nth-of-type(2)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "90px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(4) > ul > li:nth-of-type(3)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(5)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "120px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(6)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "120px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(1) > li:nth-of-type(7)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(1) > p",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(2) > p",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(3) > p",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(4) > p",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(6) > p:nth-of-type(1)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(6) > ul > li:nth-of-type(1)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "90px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(6) > ul > li:nth-of-type(2)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "120px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(6) > ul > li:nth-of-type(3)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(2) > li:nth-of-type(7) > p",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(3) > li:nth-of-type(1)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ol:nth-of-type(3) > li:nth-of-type(5)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(10)",
+        "prop": "height",
+        "values": [
+          "90px",
+          "180px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(11)",
+        "prop": "height",
+        "values": [
+          "152px",
+          "242px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(12)",
+        "prop": "height",
+        "values": [
+          "150px",
+          "240px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(13)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "90px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(15)",
+        "prop": "height",
+        "values": [
+          "120px",
+          "210px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(16)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(18)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "90px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(19)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(2)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "90px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(20)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "120px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(24)",
+        "prop": "height",
+        "values": [
+          "120px",
+          "180px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(25)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(26)",
+        "prop": "height",
+        "values": [
+          "120px",
+          "240px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(27)",
+        "prop": "height",
+        "values": [
+          "90px",
+          "150px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(29) > a",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(3)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "90px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(31)",
+        "prop": "height",
+        "values": [
+          "90px",
+          "150px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(32)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "120px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(4)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(5) > div.image-wrapper > img",
+        "prop": "height",
+        "values": [
+          "287.656px",
+          "162.062px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(7)",
+        "prop": "height",
+        "values": [
+          "120px",
+          "180px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(8)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "120px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > p:nth-of-type(9)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(2) > li:nth-of-type(1)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(2) > li:nth-of-type(2)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "90px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(2) > li:nth-of-type(3)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(3) > li:nth-of-type(1)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "90px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(3) > li:nth-of-type(2)",
+        "prop": "height",
+        "values": [
+          "90px",
+          "150px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(4) > li:nth-of-type(1) > p",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(4) > li:nth-of-type(2) > p",
+        "prop": "height",
+        "values": [
+          "60px",
+          "90px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(4) > li:nth-of-type(3) > p",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(4) > li:nth-of-type(4) > p",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(6) > li:nth-of-type(1)",
+        "prop": "height",
+        "values": [
+          "90px",
+          "180px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(6) > li:nth-of-type(2)",
+        "prop": "height",
+        "values": [
+          "60px",
+          "90px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(2) > ul:nth-of-type(6) > li:nth-of-type(3)",
+        "prop": "height",
+        "values": [
+          "30px",
+          "60px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div:nth-of-type(3)",
+        "prop": "display",
+        "values": [
+          "none",
+          "block"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar",
+        "prop": "position",
+        "values": [
+          "fixed",
+          "absolute"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar",
+        "prop": "padding-top",
+        "values": [
+          "0px",
+          "8px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar",
+        "prop": "padding-bottom",
+        "values": [
+          "0px",
+          "8px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar",
+        "prop": "padding-left",
+        "values": [
+          "0px",
+          "8px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar",
+        "prop": "background-color",
+        "values": [
+          "rgb(255, 255, 255)",
+          "rgba(0, 0, 0, 0)"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar",
+        "prop": "z-index",
+        "values": [
+          "5",
+          "3"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar",
+        "prop": "height",
+        "values": [
+          "40px",
+          "57px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container",
+        "prop": "display",
+        "values": [
+          "flex",
+          "contents"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container",
+        "prop": "align-items",
+        "values": [
+          "center",
+          "normal"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container",
+        "prop": "gap",
+        "values": [
+          "8px",
+          "normal"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container",
+        "prop": "padding-right",
+        "values": [
+          "12px",
+          "28px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container",
+        "prop": "padding-left",
+        "values": [
+          "12px",
+          "28px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(1)",
+        "prop": "display",
+        "values": [
+          "contents",
+          "flex"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(1)",
+        "prop": "height",
+        "values": [
+          "auto",
+          "30px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(1) > button[aria-label=\"Open docs navigation\"].d-lg-none.docs-nav-toggle",
+        "prop": "display",
+        "values": [
+          "flex",
+          "none"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(1) > nav[aria-label=\"breadcrumb\"].top-bar.trail",
+        "prop": "display",
+        "values": [
+          "none",
+          "block"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(2)",
+        "prop": "display",
+        "values": [
+          "contents",
+          "flex"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(2)",
+        "prop": "height",
+        "values": [
+          "auto",
+          "40px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(2) > button.toc-toggle",
+        "prop": "display",
+        "values": [
+          "flex",
+          "none"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(2) > div.top-bar",
+        "prop": "display",
+        "values": [
+          "none",
+          "flex"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(2) > div#inkeep",
+        "prop": "background-color",
+        "values": [
+          "rgba(0, 0, 0, 0)",
+          "rgb(250, 251, 254)"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > article.learn__post > div#top-bar > div.container > div:nth-of-type(2) > div#inkeep",
+        "prop": "width",
+        "values": [
+          "34px",
+          "140px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content",
+        "prop": "position",
+        "values": [
+          "fixed",
+          "sticky"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content",
+        "prop": "padding-top",
+        "values": [
+          "0px",
+          "80px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content",
+        "prop": "padding-right",
+        "values": [
+          "0px",
+          "10px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content",
+        "prop": "border-right-width",
+        "values": [
+          "0px",
+          "1px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content",
+        "prop": "visibility",
+        "values": [
+          "hidden",
+          "visible"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content",
+        "prop": "z-index",
+        "values": [
+          "10001",
+          "auto"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content",
+        "prop": "width",
+        "values": [
+          "320px",
+          "226px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content",
+        "prop": "height",
+        "values": [
+          "900px",
+          "826px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div",
+        "prop": "position",
+        "values": [
+          "relative",
+          "static"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div",
+        "prop": "padding-top",
+        "values": [
+          "40px",
+          "0px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div",
+        "prop": "padding-right",
+        "values": [
+          "20px",
+          "0px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div",
+        "prop": "padding-bottom",
+        "values": [
+          "24px",
+          "0px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div",
+        "prop": "padding-left",
+        "values": [
+          "20px",
+          "0px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div",
+        "prop": "border-right-width",
+        "values": [
+          "1px",
+          "0px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div",
+        "prop": "background-color",
+        "values": [
+          "rgb(255, 255, 255)",
+          "rgba(0, 0, 0, 0)"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content > div",
+        "prop": "height",
+        "values": [
+          "900px",
+          "1784.5px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div > div.bootstrap > div.MB-Page.blog-post > div#main-navigation-content::before",
+        "prop": "content",
+        "values": [
+          "\"\"",
+          "none"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div.bootstrap.image-zoom-wrapper > div.container",
+        "prop": "width",
+        "values": [
+          "720px",
+          "960px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container",
+        "prop": "padding-top",
+        "values": [
+          "5px",
+          "16px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container",
+        "prop": "padding-bottom",
+        "values": [
+          "5px",
+          "16px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container",
+        "prop": "width",
+        "values": [
+          "720px",
+          "960px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.align-items-center.col-lg-2 > a[href=\"http://localhost:4710/\"].align-items-center.d-flex > svg",
+        "prop": "height",
+        "values": [
+          "22px",
+          "32px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.align-items-center.col-lg-3 > a[href=\"http://localhost:4710/cloud/login\"].Button.btn",
+        "prop": "display",
+        "values": [
+          "none",
+          "block"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.align-items-center.col-lg-3 > a#get-started-btn",
+        "prop": "margin-left",
+        "values": [
+          "0px",
+          "8px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.align-items-center.col-lg-3 > a#get-started-btn",
+        "prop": "border-top-left-radius",
+        "values": [
+          "8px",
+          "12px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.align-items-center.col-lg-3 > a#get-started-btn",
+        "prop": "height",
+        "values": [
+          "36px",
+          "42px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.align-items-center.col-lg-3 > button#mobile-nav-hamburger-wrapper",
+        "prop": "display",
+        "values": [
+          "block",
+          "none"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap > div.submenus-container",
+        "prop": "display",
+        "values": [
+          "none",
+          "flex"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      },
+      {
+        "key": "body > div.legacy-scope:nth-of-type(1) > header.bootstrap.hide-on-scroll > div.bg-neutral-white.navigation-header > div.container > div.flex-grow-1.flex-nowrap::after",
+        "prop": "height",
+        "values": [
+          "46px",
+          "42px"
+        ],
+        "at": [
+          {
+            "url": "/docs/latest/questions/alerts",
+            "widths": [
+              1000
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

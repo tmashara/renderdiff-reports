@@ -1,0 +1,2044 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Visual diff</title>
+<style>
+  :root { color-scheme: light dark; --bg:#fff; --fg:#1a1a1a; --mut:#666; --line:#e3e3e3; --card:#fafafa; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181c; --fg:#e8e8e8; --mut:#999; --line:#2c2f36; --card:#1c1f24; } }
+  * { box-sizing: border-box }
+  body { margin:0; padding:2rem; background:var(--bg); color:var(--fg);
+         font:14px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif; }
+  h1 { font-size:1.4rem; margin:0 0 .25rem }
+  h2 { font-size:1.05rem; margin:2.5rem 0 .25rem }
+  .meta { color:var(--mut); font-size:12px; margin:0 0 2rem }
+  .meta code { color:var(--fg) }
+  .blurb { color:var(--mut); margin:.25rem 0 .75rem; max-width:70ch }
+  .agg { margin:.25rem 0 1rem }
+  .good { color:#2e7d32 } .warn { color:#b58900 } .bad { color:#c62828 }
+  .card { border:1px solid var(--line); border-radius:8px; background:var(--card);
+          margin:0 0 1rem; padding:.75rem 1rem 1rem; }
+  .card header { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; margin-bottom:.75rem }
+  .score { font-weight:700; font-variant-numeric:tabular-nums; min-width:4.5rem }
+  .w, .px, .delta, .unstable, .aligned, .hook, .accepted { color:var(--mut); font-size:12px }
+  .findings { font-size:12px; color:var(--mut); margin:0 0 .75rem }
+  .findings p { margin:.25rem 0 0 }
+  .findings ul { margin:.25rem 0; font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace }
+  .crops { display:flex; flex-wrap:wrap; gap:.5rem; margin:.25rem 0 }
+  .crops img { width:auto; max-width:100%; max-height:160px }
+  .findings .add { color:#2e7d32 } .findings .del { color:#c62828 }
+  .unstable { background:rgba(255,0,255,.12); padding:.1rem .4rem; border-radius:4px }
+  .delta { background:rgba(181,137,0,.15); padding:.1rem .4rem; border-radius:4px }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr } }
+  figure { margin:0 }
+  figcaption { color:var(--mut); font-size:11px; text-transform:uppercase;
+               letter-spacing:.05em; margin-bottom:.35rem }
+  img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px;
+        background:#fff; display:block }
+  code { font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace }
+  details { margin:1rem 0; color:var(--mut) }
+  ul { margin:.5rem 0; padding-left:1.25rem }
+  figure a img + img, .crop img + img { border-top:0; border-radius:0 }
+  .nodiff { color:var(--mut); font-size:12px }
+</style>
+<style>
+  body { padding:0; display:grid; grid-template-columns:260px minmax(0,1fr) }
+  main { padding:2rem; min-width:0 }
+  .side { position:sticky; top:0; height:100vh; overflow:auto; padding:1rem;
+          border-right:1px solid var(--line); font-size:12px }
+  .side #q { width:100%; padding:.35rem .5rem; margin-bottom:.5rem; font:inherit; color:var(--fg);
+                background:var(--card); border:1px solid var(--line); border-radius:4px }
+  .side ul { list-style:none; padding:0; margin:0 }
+  .side li { padding:.3rem 0; border-bottom:1px solid var(--line) }
+  .side .rt { display:block; overflow-wrap:anywhere; text-decoration:none;
+              font-family:ui-monospace,SFMono-Regular,Menlo,monospace }
+  .ws a, .differs a { margin-right:.4rem; font-variant-numeric:tabular-nums }
+  .summary .counts { display:flex; flex-wrap:wrap; gap:1rem; font-size:15px; margin:0 0 .5rem }
+  .summary .counts a { color:inherit }
+  .summary .differs { font-size:13px; padding-left:0; list-style:none }
+  .card { scroll-margin-top:1rem }
+  .card:target { outline:2px solid #509ee3 }
+  .side label { display:block; margin-bottom:.5rem }
+  body:has(#slide:checked) .grid, body:not(:has(#slide:checked)) .slider { display:none }
+  /* ponytail: both shots fit the card width, so a width delta scales them apart */
+  .slider { display:grid; position:relative }
+  .slider > * { grid-area:1/1; align-self:start }
+  .slider .l { clip-path:inset(0 calc(100% - var(--x)) 0 0) }
+  .slider input { appearance:none; align-self:stretch; width:100%; height:100%; margin:0;
+                  opacity:0; cursor:ew-resize }
+  .slider::after { content:""; position:absolute; top:0; bottom:0; left:var(--x); width:2px;
+                   margin-left:-1px; background:#509ee3; pointer-events:none }
+  .slider:focus-within { outline:2px solid #509ee3 }
+  @media (max-width:900px) {
+    body { display:block }
+    .side { position:static; height:auto; max-height:40vh; border-right:0; border-bottom:1px solid var(--line) }
+  }
+</style>
+<body>
+<nav class="side">
+<label><input id="slide" type="checkbox"> Slider view</label>
+<input id="q" type="search" aria-label="Filter routes" placeholder="Filter 9 route(s)" autocomplete="off">
+<ul id="routes">
+<li data-route="/"><a class="rt warn" href="#index.375">/</a>
+  <span class="ws"><a class="good" href="#index.375" title="100.00%">375</a><a class="warn" href="#index.600" title="83.63%">600</a><a class="warn" href="#index.1000" title="75.15%">1000</a><a class="good" href="#index.1100" title="100.00%">1100</a><a class="warn" href="#index.1240" title="83.16%">1240</a><a class="warn" href="#index.1440" title="90.44%">1440</a><a class="good" href="#index.1600" title="100.00%">1600</a></span></li>
+<li data-route="/product/embedded-analytics"><a class="rt warn" href="#product-embedded-analytics.375">/product/embedded-analytics</a>
+  <span class="ws"><a class="good" href="#product-embedded-analytics.375" title="100.00%">375</a><a class="good" href="#product-embedded-analytics.600" title="100.00%">600</a><a class="warn" href="#product-embedded-analytics.1000" title="87.04%">1000</a><a class="good" href="#product-embedded-analytics.1100" title="100.00%">1100</a><a class="good" href="#product-embedded-analytics.1240" title="100.00%">1240</a><a class="warn" href="#product-embedded-analytics.1440" title="99.99%">1440</a><a class="good" href="#product-embedded-analytics.1600" title="100.00%">1600</a></span></li>
+<li data-route="/features/metabase-ai"><a class="rt warn" href="#features-metabase-ai.375">/features/metabase-ai</a>
+  <span class="ws"><a class="good" href="#features-metabase-ai.375" title="100.00%">375</a><a class="good" href="#features-metabase-ai.600" title="100.00%">600</a><a class="warn" href="#features-metabase-ai.1000" title="77.93%">1000</a><a class="good" href="#features-metabase-ai.1100" title="100.00%">1100</a><a class="good" href="#features-metabase-ai.1240" title="100.00%">1240</a><a class="warn" href="#features-metabase-ai.1440" title="99.99%">1440</a><a class="good" href="#features-metabase-ai.1600" title="100.00%">1600</a></span></li>
+<li data-route="/pricing"><a class="rt warn" href="#pricing.375">/pricing</a>
+  <span class="ws"><a class="good" href="#pricing.375" title="100.00%">375</a><a class="warn" href="#pricing.600" title="99.91%">600</a><a class="warn" href="#pricing.1000" title="92.86%">1000</a><a class="good" href="#pricing.1100" title="100.00%">1100</a><a class="warn" href="#pricing.1240" title="99.84%">1240</a><a class="warn" href="#pricing.1440" title="99.86%">1440</a><a class="good" href="#pricing.1600" title="100.00%">1600</a></span></li>
+<li data-route="/blog/metabase-doesnt-use-php"><a class="rt warn" href="#blog-metabase-doesnt-use-php.375">/blog/metabase-doesnt-use-php</a>
+  <span class="ws"><a class="good" href="#blog-metabase-doesnt-use-php.375" title="100.00%">375</a><a class="warn" href="#blog-metabase-doesnt-use-php.600" title="84.61%">600</a><a class="warn" href="#blog-metabase-doesnt-use-php.1000" title="78.15%">1000</a><a class="good" href="#blog-metabase-doesnt-use-php.1100" title="100.00%">1100</a><a class="warn" href="#blog-metabase-doesnt-use-php.1240" title="84.78%">1240</a><a class="warn" href="#blog-metabase-doesnt-use-php.1440" title="80.59%">1440</a><a class="warn" href="#blog-metabase-doesnt-use-php.1600" title="94.86%">1600</a></span></li>
+<li data-route="/learn/metabase-basics/getting-started/create-dashboards"><a class="rt warn" href="#learn-metabase-basics-getting-started-create-dashboards.375">/learn/metabase-basics/getting-started/create-dashboards</a>
+  <span class="ws"><a class="good" href="#learn-metabase-basics-getting-started-create-dashboards.375" title="100.00%">375</a><a class="warn" href="#learn-metabase-basics-getting-started-create-dashboards.600" title="92.89%">600</a><a class="warn" href="#learn-metabase-basics-getting-started-create-dashboards.1000" title="89.96%">1000</a><a class="good" href="#learn-metabase-basics-getting-started-create-dashboards.1100" title="100.00%">1100</a><a class="warn" href="#learn-metabase-basics-getting-started-create-dashboards.1240" title="84.08%">1240</a><a class="warn" href="#learn-metabase-basics-getting-started-create-dashboards.1440" title="84.69%">1440</a><a class="good" href="#learn-metabase-basics-getting-started-create-dashboards.1600" title="100.00%">1600</a></span></li>
+<li data-route="/changelog"><a class="rt warn" href="#changelog.375">/changelog</a>
+  <span class="ws"><a class="good" href="#changelog.375" title="100.00%">375</a><a class="good" href="#changelog.600" title="100.00%">600</a><a class="warn" href="#changelog.1000" title="77.34%">1000</a><a class="good" href="#changelog.1100" title="100.00%">1100</a><a class="warn" href="#changelog.1240" title="99.97%">1240</a><a class="warn" href="#changelog.1440" title="99.99%">1440</a><a class="good" href="#changelog.1600" title="100.00%">1600</a></span></li>
+<li data-route="/upgrade"><a class="rt warn" href="#upgrade.375">/upgrade</a>
+  <span class="ws"><a class="good" href="#upgrade.375" title="100.00%">375</a><a class="warn" href="#upgrade.600" title="89.15%">600</a><a class="warn" href="#upgrade.1000" title="80.44%">1000</a><a class="good" href="#upgrade.1100" title="100.00%">1100</a><a class="warn" href="#upgrade.1240" title="88.74%">1240</a><a class="warn" href="#upgrade.1440" title="96.72%">1440</a><a class="good" href="#upgrade.1600" title="100.00%">1600</a></span></li>
+<li data-route="/events/dataconnect-26"><a class="rt warn" href="#events-dataconnect-26.375">/events/dataconnect-26</a>
+  <span class="ws"><a class="good" href="#events-dataconnect-26.375" title="100.00%">375</a><a class="warn" href="#events-dataconnect-26.600" title="99.92%">600</a><a class="warn" href="#events-dataconnect-26.1000" title="62.36%">1000</a><a class="good" href="#events-dataconnect-26.1100" title="100.00%">1100</a><a class="warn" href="#events-dataconnect-26.1240" title="99.84%">1240</a><a class="warn" href="#events-dataconnect-26.1440" title="99.86%">1440</a><a class="good" href="#events-dataconnect-26.1600" title="100.00%">1600</a></span></li>
+</ul>
+</nav>
+<script>
+  const q = document.getElementById("q");
+  q.oninput = () => {
+    const v = q.value.trim().toLowerCase();
+    for (const li of document.querySelectorAll("#routes li")) li.hidden = !li.dataset.route.includes(v);
+  };
+  document.addEventListener("input", (e) => {
+    if (e.target.type === "range") e.target.parentNode.style.setProperty("--x", e.target.value + "%");
+  });
+</script>
+<main>
+<h1>Visual diff</h1>
+<p class="meta">
+  left <code>http://localhost:4611</code> vs right <code>http://localhost:4610</code><br>
+  2026-10-30T15:52:56.094Z &middot; chromium 156.0.8078.4
+  
+</p>
+
+<section class="summary">
+<p class="counts">
+  <span><b>9</b> route(s)</span>
+  <span><b>63</b> shot(s) at 375, 600, 1000, 1100, 1240, 1440, 1600px</span>
+  <span class="warn"><b>32</b> differ</span>
+  <span><b>0</b> error(s)</span>
+  <span><b>0</b> accepted</span>
+  <span><b>0</b> stale accepted</span>
+</p>
+<p>mean <b class="bad">94.58%</b> &middot;
+  worst <b class="bad">62.36%</b>
+  <a href="#events-dataconnect-26.1000">/events/dataconnect-26 @1000</a></p>
+<ul class="differs"><li><code>/events/dataconnect-26</code> <a class="warn" href="#events-dataconnect-26.1000" title="62.36%">1000</a> <span class="w">62.36%</span> <a class="warn" href="#events-dataconnect-26.1240" title="99.84%">1240</a> <span class="w">99.84%</span> <a class="warn" href="#events-dataconnect-26.1440" title="99.86%">1440</a> <span class="w">99.86%</span> <a class="warn" href="#events-dataconnect-26.600" title="99.92%">600</a> <span class="w">99.92%</span></li>
+<li><code>/</code> <a class="warn" href="#index.1000" title="75.15%">1000</a> <span class="w">75.15%</span> <a class="warn" href="#index.1240" title="83.16%">1240</a> <span class="w">83.16%</span> <a class="warn" href="#index.600" title="83.63%">600</a> <span class="w">83.63%</span> <a class="warn" href="#index.1440" title="90.44%">1440</a> <span class="w">90.44%</span></li>
+<li><code>/changelog</code> <a class="warn" href="#changelog.1000" title="77.34%">1000</a> <span class="w">77.34%</span> <a class="warn" href="#changelog.1240" title="99.97%">1240</a> <span class="w">99.97%</span> <a class="warn" href="#changelog.1440" title="99.99%">1440</a> <span class="w">99.99%</span></li>
+<li><code>/features/metabase-ai</code> <a class="warn" href="#features-metabase-ai.1000" title="77.93%">1000</a> <span class="w">77.93%</span> <a class="warn" href="#features-metabase-ai.1440" title="99.99%">1440</a> <span class="w">99.99%</span></li>
+<li><code>/blog/metabase-doesnt-use-php</code> <a class="warn" href="#blog-metabase-doesnt-use-php.1000" title="78.15%">1000</a> <span class="w">78.15%</span> <a class="warn" href="#blog-metabase-doesnt-use-php.1440" title="80.59%">1440</a> <span class="w">80.59%</span> <a class="warn" href="#blog-metabase-doesnt-use-php.600" title="84.61%">600</a> <span class="w">84.61%</span> <a class="warn" href="#blog-metabase-doesnt-use-php.1240" title="84.78%">1240</a> <span class="w">84.78%</span> <a class="warn" href="#blog-metabase-doesnt-use-php.1600" title="94.86%">1600</a> <span class="w">94.86%</span></li>
+<li><code>/upgrade</code> <a class="warn" href="#upgrade.1000" title="80.44%">1000</a> <span class="w">80.44%</span> <a class="warn" href="#upgrade.1240" title="88.74%">1240</a> <span class="w">88.74%</span> <a class="warn" href="#upgrade.600" title="89.15%">600</a> <span class="w">89.15%</span> <a class="warn" href="#upgrade.1440" title="96.72%">1440</a> <span class="w">96.72%</span></li>
+<li><code>/learn/metabase-basics/getting-started/create-dashboards</code> <a class="warn" href="#learn-metabase-basics-getting-started-create-dashboards.1240" title="84.08%">1240</a> <span class="w">84.08%</span> <a class="warn" href="#learn-metabase-basics-getting-started-create-dashboards.1440" title="84.69%">1440</a> <span class="w">84.69%</span> <a class="warn" href="#learn-metabase-basics-getting-started-create-dashboards.1000" title="89.96%">1000</a> <span class="w">89.96%</span> <a class="warn" href="#learn-metabase-basics-getting-started-create-dashboards.600" title="92.89%">600</a> <span class="w">92.89%</span></li>
+<li><code>/product/embedded-analytics</code> <a class="warn" href="#product-embedded-analytics.1000" title="87.04%">1000</a> <span class="w">87.04%</span> <a class="warn" href="#product-embedded-analytics.1440" title="99.99%">1440</a> <span class="w">99.99%</span></li>
+<li><code>/pricing</code> <a class="warn" href="#pricing.1000" title="92.86%">1000</a> <span class="w">92.86%</span> <a class="warn" href="#pricing.1240" title="99.84%">1240</a> <span class="w">99.84%</span> <a class="warn" href="#pricing.1440" title="99.86%">1440</a> <span class="w">99.86%</span> <a class="warn" href="#pricing.600" title="99.91%">600</a> <span class="w">99.91%</span></li></ul>
+<details><summary>Findings: 84 repeated on 2+ routes</summary>
+<pre class="computed">  -&quot;Administration&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;'Wait, you don't have a semantic layer yet?' AI analytics readiness pulse&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;50k&quot;  ×9 routes  /@1440 /product/embedded-analytics@1440 /features/metabase-ai@1440 +6 routes
+  -&quot;As humans write less code: workloads shift from human to agent verification with iterative test suites&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Blog&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Business Intelligence pricing&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Business Intelligence&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Cloud&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;CSV upload&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Customers&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Dashboards and reporting&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Data segregation&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Data sources&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Data Studio New&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Developers building in-product analytics&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Discussion&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Docs&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Documentation&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Drill-through&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  -&quot;Embedded Analytics pricing&quot;  ×9 routes  /@1000 /product/embedded-analytics@1000 /features/metabase-ai@1000 +6 routes
+  (+64 more in results.json)</pre></details>
+<details><summary>Computed styles: 926 finding(s)</summary>
+<pre class="computed">computed: 926 findings; dom identical on 0 of 9 route(s), differs / (474) /product/embedded-analytics (474) /features/metabase-ai (479) /pricing (474) /blog/metabase-doesnt-use-php (479) /learn/metabase-basics/getting-started/create-dashboards (16) /changelog (22) /upgrade (805) /events/dataconnect-26 (478), so findings there are hints
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center padding-top 5px→16px  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center padding-bottom 5px→16px  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center &gt; div.-mx-3.flex &gt; div.flex.flex-auto &gt; a[href=&quot;http://localhost:4610/cloud/login&quot;].bg-white.border display none→block  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center &gt; div.-mx-3.flex &gt; div.flex.flex-auto &gt; a#get-started-btn display flex→block  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center &gt; div.-mx-3.flex &gt; div.flex.flex-auto &gt; a#get-started-btn align-items center→normal  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center &gt; div.-mx-3.flex &gt; div.flex.flex-auto &gt; a#get-started-btn margin-left 0px→8px  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center &gt; div.-mx-3.flex &gt; div.flex.flex-auto &gt; a#get-started-btn padding-top 0px→10px  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center &gt; div.-mx-3.flex &gt; div.flex.flex-auto &gt; a#get-started-btn padding-bottom 0px→10px  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center &gt; div.-mx-3.flex &gt; div.flex.flex-auto &gt; a#get-started-btn border-top-left-radius 8px→12px  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center &gt; div.-mx-3.flex &gt; div.flex.flex-auto &gt; a#get-started-btn height 36px→42px  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center &gt; div.-mx-3.flex &gt; div.flex.flex-auto &gt; button#mobile-nav-hamburger-wrapper display block→none  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center &gt; div.-mx-3.flex &gt; div.flex.home-link &gt; a[href=&quot;http://localhost:4610/&quot;].flex.items-center &gt; svg height 22px→32px  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div.flex.items-center &gt; div.-mx-3.flex &gt; div.gap-2\.5.group\/menus display none→flex  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.hide-on-scroll &gt; div.bg-white.leading-\[normal\] &gt; div#nav-menu-mobile height 844px→828px  /learn/metabase-basics/getting-started/create-dashboards@1000 /changelog@1000
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; section.love-revamp &gt; div.home-container &gt; div.love-masonry &gt; figure.love-card:nth-of-type(15) &gt; blockquote.love-quote height 69.75px→46.5px  /@1000,1440
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main.\[\&amp;_p_a\:hover\]\:text-\[\#2D86D4\].\[\&amp;_p_a\]\:font-bold &gt; div.pb-18.upgrade-container &gt; div.bg-\[\#EEF6FC\].flex &gt; div.flex.flex-col:nth-of-type(2) &gt; div.after\:absolute.after\:bg-linear-to-b &gt; div.absolute.px-8:nth-of-type(1) &gt; figure.bg-white.border:nth-of-type(2) &gt; blockquote.leading-\[22px\].mb-4 height 44px→66px  /upgrade@600,1240
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main.\[\&amp;_p_a\:hover\]\:text-\[\#2D86D4\].\[\&amp;_p_a\]\:font-bold &gt; div.pb-18.upgrade-container &gt; div.bg-\[\#EEF6FC\].flex &gt; div.flex.flex-col:nth-of-type(2) &gt; div.after\:absolute.after\:bg-linear-to-b &gt; div.absolute.px-8:nth-of-type(2) &gt; figure.bg-white.border:nth-of-type(2) &gt; blockquote.leading-\[22px\].mb-4 height 44px→66px  /upgrade@600,1240
+  body height 12514.1px→13639px  /@600
+  body height 12601.7px→11696.4px  /@1000
+  body height 11279.9px→10309.9px  /@1240
+  (+906 more in results.json)
+  unmatched /@375 +body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.lg\:-top-12 -body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.site-header
+  unmatched /product/embedded-analytics@375 +body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.lg\:-top-12 -body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.site-header
+  unmatched /features/metabase-ai@375 +body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.lg\:-top-12 -body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.site-header
+  unmatched /pricing@375 +body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.lg\:-top-12 -body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.site-header
+  unmatched /blog/metabase-doesnt-use-php@375 +body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.lg\:-top-12 -body &gt; div.page-scope.site-chrome:nth-of-type(1) &gt; header.\[\&amp;\.promo-banner-hidden\]\:top-0.site-header
+  (+4 more routes with unmatched elements)</pre></details>
+
+</section>
+
+
+<article class="card" id="events-dataconnect-26.1000">
+  <header>
+    <span class="score bad">62.36%</span>
+    <code>/events/dataconnect-26</code>
+    <span class="w">@1000px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +990px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (254)</span>
+    
+    <span class="px">2,359,988 / 6,270,000 px differ</span>
+  </header>
+  <div class="findings"><p>27 region(s)</p><ul class="regions"><li>1000×2704 at (0,992) — 1,113,529 px<span class="dom"> — div.no-overflow height 5086.41px→4052.34px</span></li><li>944×688 at (32,192) — 154,076 px<span class="dom"> — section.border-b.border-\[\#e4e8ee\]:nth-of-type(1) &gt; div.wrapper y-44</span></li><li>1000×336 at (0,3808) — 32,076 px<span class="dom"> — div.mb-9.grid gap 24px→40px, grid-template-columns 936px→522.656px 373.328px; section.py-20.text-center y+990; #ai-readiness height 1141.94px→897.078px</span></li><li>960×512 at (16,4160) — 27,197 px<span class="dom"> — div.mb-8.grid grid-template-columns 460px 460px→222px 222px 222px 222px, height 504.094px→349.891px; div.site-footer-cols.flex y+990</span></li><li>1000×112 at (0,0) — 14,498 px<span class="dom"> — header.site-header.top-0 &quot;Get started&quot;→&quot;New Metabase 64: Security hardening, req&quot;, height 78px→122px; section.border-b.border-\[\#e4e8ee\]:nth-of-type(1) y-44; main.leading-\[1\.55\].text-secondary height 5086.41px→4052.34px</span></li></ul><div class="crops"><a class="crop" href="events-dataconnect-26.1000.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="events-dataconnect-26.1000.c1.webp"></a><a class="crop" href="events-dataconnect-26.1000.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="events-dataconnect-26.1000.c2.webp"></a><a class="crop" href="events-dataconnect-26.1000.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="events-dataconnect-26.1000.c3.webp"></a></div><p>text: 0 added, 66 removed</p><ul class="text"><li class="del">- New</li><li class="del">- Metabase 64: Security hardening, required 2FA, a better MCP server, Metabot on (almost) any model, and more.</li><li class="del">- Read the announcement</li><li class="del">- ×</li><li class="del">- Product</li><li class="del">- Business Intelligence</li><li class="del">- Self-service analytics for your team</li><li class="del">- Embedded Analytics</li><li class="del">- Fast, flexible customer-facing analytics</li><li class="del">- Data sources</li><li class="del">- Security</li><li class="del">- Cloud</li><li class="del">- Features</li><li class="del">- Metabase AI</li><li class="del">- Data Studio New</li><li class="del">- Dashboards and reporting</li><li class="del">- Query builder</li><li class="del">- Data segregation</li><li class="del">- Usage analytics</li><li class="del">- Embedded analytics SDK</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="events-dataconnect-26.1000.left.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1000.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="events-dataconnect-26.1000.right.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1000.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="events-dataconnect-26.1000.diff.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1000.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="events-dataconnect-26.1000.right.webp">
+    <div class="l"><img loading="lazy" src="events-dataconnect-26.1000.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1000">
+  <header>
+    <span class="score bad">75.15%</span>
+    <code>/</code>
+    <span class="w">@1000px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +906px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (254)</span>
+    
+    <span class="px">3,130,605 / 12,602,000 px differ</span>
+  </header>
+  <div class="findings"><p>70 region(s)</p><ul class="regions"><li>960×2992 at (16,5216) — 928,621 px<span class="dom"> — section.embedded-analytics margin-bottom 96px→168px, height 1771px→1703.97px; section.bi-panels.anim-ready height 3449.45px→2550.94px; div.full-width-centered.keeps-up-as-you-go y+793; div.home-page height 11417.7px→10468.4px</span></li><li>784×2048 at (112,3024) — 823,640 px<span class="dom"> — section.bi-panels.anim-ready &gt; div.home-container width 720px→960px, height 3353.45px→2454.94px</span></li><li>960×848 at (16,464) — 110,333 px<span class="dom"> — section.hero-revamp height 1514px→1538px; div.hero-demo y-68; div.hero-revamp-content height 282px→306px</span></li><li>960×1008 at (16,8272) — 56,037 px<span class="dom"> — div.cards-container.three-cards y+793; div.full-width-centered.keeps-up-as-you-go &gt; p text-align left→center; section.love-revamp &gt; div.home-container width 720px→960px, height 1646.75px→1417px; div.full-width-centered.keeps-up-as-you-go y+793; section.embedded-analytics margin-bottom 96px→168px, height 1771px→1703.97px</span></li><li>880×656 at (48,1776) — 47,638 px<span class="dom"> — section.up-and-running &gt; div.home-container width 720px→960px, height 632px→663.984px</span></li></ul><div class="crops"><a class="crop" href="index.1000.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.1000.c1.webp"></a><a class="crop" href="index.1000.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.1000.c2.webp"></a><a class="crop" href="index.1000.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="index.1000.c3.webp"></a></div><p>text: 0 added, 66 removed</p><ul class="text"><li class="del">- New</li><li class="del">- Metabase 64: Security hardening, required 2FA, a better MCP server, Metabot on (almost) any model, and more.</li><li class="del">- Read the announcement</li><li class="del">- ×</li><li class="del">- Product</li><li class="del">- Business Intelligence</li><li class="del">- Self-service analytics for your team</li><li class="del">- Embedded Analytics</li><li class="del">- Fast, flexible customer-facing analytics</li><li class="del">- Data sources</li><li class="del">- Security</li><li class="del">- Cloud</li><li class="del">- Features</li><li class="del">- Metabase AI</li><li class="del">- Data Studio New</li><li class="del">- Dashboards and reporting</li><li class="del">- Query builder</li><li class="del">- Data segregation</li><li class="del">- Usage analytics</li><li class="del">- Embedded analytics SDK</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="index.1000.left.webp" target="_blank"><img loading="lazy" src="index.1000.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="index.1000.right.webp" target="_blank"><img loading="lazy" src="index.1000.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1000.diff.webp" target="_blank"><img loading="lazy" src="index.1000.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1000.right.webp">
+    <div class="l"><img loading="lazy" src="index.1000.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="changelog.1000">
+  <header>
+    <span class="score bad">77.34%</span>
+    <code>/changelog</code>
+    <span class="w">@1000px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +588px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (11)</span>
+    
+    <span class="px">638,758 / 2,819,000 px differ</span>
+  </header>
+  <div class="findings"><p>75 region(s)</p><ul class="regions"><li>1000×432 at (0,0) — 18,842 px<span class="dom"> — div.learn.docs display grid→block, grid-template-columns 226px 694px→none (re-parented); +header.site-header.top-0 &quot;Get started&quot;</span></li><li>176×416 at (48,448) — 3,918 px<span class="dom"> — article.learn__post &gt; div:nth-of-type(2) width 40px→422px, height 1552.38px→882px; div:nth-of-type(2) &gt; ul padding-left 20px→0px, width 20px→215px (re-parented)</span></li><li>176×208 at (16,1888) — 2,421 px<span class="dom"> — div.site-footer-col:nth-of-type(1) y+588; div.site-footer-col:nth-of-type(5) &gt; div.site-footer-group.mb-7:nth-of-type(2) y+588</span></li><li>336×48 at (336,208) — 2,316 px<span class="dom"> — div.learn.docs display grid→block, grid-template-columns 226px 694px→none (re-parented); h1 width 0px→382px, height 86.375px→43.1875px</span></li><li>384×64 at (336,864) — 2,041 px<span class="dom"> — div.learn.docs display grid→block, grid-template-columns 226px 694px→none (re-parented); article.learn__post &gt; div:nth-of-type(2) &gt; p width 0px→382px, height 390px→60px</span></li></ul><div class="crops"><a class="crop" href="changelog.1000.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="changelog.1000.c1.webp"></a><a class="crop" href="changelog.1000.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="changelog.1000.c2.webp"></a><a class="crop" href="changelog.1000.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="changelog.1000.c3.webp"></a></div><p>text: 0 added, 85 removed</p><ul class="text"><li class="del">- New</li><li class="del">- Metabase 64: Security hardening, required 2FA, a better MCP server, Metabot on (almost) any model, and more.</li><li class="del">- Read the announcement</li><li class="del">- ×</li><li class="del">- Product</li><li class="del">- Business Intelligence</li><li class="del">- Self-service analytics for your team</li><li class="del">- Embedded Analytics</li><li class="del">- Fast, flexible customer-facing analytics</li><li class="del">- Data sources</li><li class="del">- Security</li><li class="del">- Cloud</li><li class="del">- Features</li><li class="del">- Metabase AI</li><li class="del">- Data Studio New</li><li class="del">- Dashboards and reporting</li><li class="del">- Query builder</li><li class="del">- Data segregation</li><li class="del">- Usage analytics</li><li class="del">- Embedded analytics SDK</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="changelog.1000.left.webp" target="_blank"><img loading="lazy" src="changelog.1000.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="changelog.1000.right.webp" target="_blank"><img loading="lazy" src="changelog.1000.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="changelog.1000.diff.webp" target="_blank"><img loading="lazy" src="changelog.1000.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="changelog.1000.right.webp">
+    <div class="l"><img loading="lazy" src="changelog.1000.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="features-metabase-ai.1000">
+  <header>
+    <span class="score bad">77.93%</span>
+    <code>/features/metabase-ai</code>
+    <span class="w">@1000px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +3163px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (317)</span>
+    
+    <span class="px">4,345,852 / 19,693,000 px differ</span>
+  </header>
+  <div class="findings"><p>136 region(s)</p><ul class="regions"><li>1000×1264 at (0,0) — 183,775 px<span class="dom"> — div.hero &gt; div.container padding-top 40px→80px, height 1341.56px→1215.22px; +div.sky; +header.site-header.top-0 &quot;Get started&quot;</span></li><li>896×688 at (48,10032) — 155,281 px<span class="dom"> — +section:nth-of-type(5) &gt; div.images &gt; div.grid &gt; div.card:nth-of-type(1) &gt; img; section:nth-of-type(5) &gt; div.images &gt; div.grid &gt; div.card:nth-of-type(2) width 920px→444px, height 687.828px→464.797px; section:nth-of-type(6) &gt; div.images margin-top 48px→80px, height 1894.53px→957.672px</span></li><li>928×1408 at (32,7536) — 127,242 px<span class="dom"> — section:nth-of-type(4) padding-top 64px→80px, padding-bottom 64px→80px; section:nth-of-type(5) padding-top 64px→80px, padding-bottom 64px→80px</span></li><li>896×560 at (32,13504) — 121,412 px<span class="dom"> — div.card.flex-lg-row:nth-of-type(1) y+2652; section:nth-of-type(7) &gt; div.images margin-top 48px→80px; section:nth-of-type(7) &gt; h2 font-size 28px→36px, line-height 32px→40px; section:nth-of-type(7) &gt; p margin-top 12px→16px, font-size 18px→20px</span></li><li>928×1104 at (32,3168) — 58,272 px<span class="dom"> — div.card:nth-of-type(3) width 920px→444px, height 687.828px→464.797px; section:nth-of-type(1) &gt; div.images &gt; div.grid &gt; div.card:nth-of-type(2) width 920px→444px, height 731.25px→513.703px; div.ai-controls.feature-container-carousel-container transform none→matrix(1, 0, 0, 1, 0, 0), height 2070px→744px (re-parented)</span></li></ul><div class="crops"><a class="crop" href="features-metabase-ai.1000.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="features-metabase-ai.1000.c1.webp"></a><a class="crop" href="features-metabase-ai.1000.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="features-metabase-ai.1000.c2.webp"></a><a class="crop" href="features-metabase-ai.1000.c3.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="features-metabase-ai.1000.c3.webp"></a></div><p>text: 0 added, 66 removed</p><ul class="text"><li class="del">- New</li><li class="del">- Metabase 64: Security hardening, required 2FA, a better MCP server, Metabot on (almost) any model, and more.</li><li class="del">- Read the announcement</li><li class="del">- ×</li><li class="del">- Product</li><li class="del">- Business Intelligence</li><li class="del">- Self-service analytics for your team</li><li class="del">- Embedded Analytics</li><li class="del">- Fast, flexible customer-facing analytics</li><li class="del">- Data sources</li><li class="del">- Security</li><li class="del">- Cloud</li><li class="del">- Features</li><li class="del">- Metabase AI</li><li class="del">- Data Studio New</li><li class="del">- Dashboards and reporting</li><li class="del">- Query builder</li><li class="del">- Data segregation</li><li class="del">- Usage analytics</li><li class="del">- Embedded analytics SDK</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="features-metabase-ai.1000.left.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.1000.left.0.webp"><img loading="lazy" src="features-metabase-ai.1000.left.1.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="features-metabase-ai.1000.right.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.1000.right.0.webp"><img loading="lazy" src="features-metabase-ai.1000.right.1.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="features-metabase-ai.1000.diff.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.1000.diff.0.webp"><img loading="lazy" src="features-metabase-ai.1000.diff.1.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="features-metabase-ai.1000.right.0.webp"><img loading="lazy" src="features-metabase-ai.1000.right.1.webp">
+    <div class="l"><img loading="lazy" src="features-metabase-ai.1000.left.0.webp"><img loading="lazy" src="features-metabase-ai.1000.left.1.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="blog-metabase-doesnt-use-php.1000">
+  <header>
+    <span class="score bad">78.15%</span>
+    <code>/blog/metabase-doesnt-use-php</code>
+    <span class="w">@1000px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -136px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (250)</span>
+    
+    <span class="px">1,219,120 / 5,581,000 px differ</span>
+  </header>
+  <div class="findings"><p>52 region(s)</p><ul class="regions"><li>912×704 at (48,336) — 377,366 px<span class="dom"> — section.py-8:nth-of-type(1) width 664px→904px, height 761.812px→921.812px; #post-content &gt; p:nth-of-type(1) width 664px→904px, height 128px→96px</span></li><li>864×720 at (64,3632) — 313,333 px<span class="dom"> — div.mb-8.w-full:nth-of-type(2) width 688px→928px, height 625.047px→718.297px; div.mb-8.w-full:nth-of-type(2) &gt; div.blog-card width 664px→904px, height 625.047px→718.297px</span></li><li>912×384 at (48,2352) — 132,108 px<span class="dom"> — +div.mt-20; ul width 664px→904px, height 304px→240px; div.order-1.mt-12 width 688px→928px</span></li><li>880×784 at (48,2832) — 124,747 px<span class="dom"> — div.mb-8.w-full:nth-of-type(1) width 688px→928px, height 618.266px→719.875px; div.mb-8.w-full:nth-of-type(1) &gt; div.blog-card width 664px→904px, height 618.266px→719.875px</span></li><li>896×272 at (48,1488) — 20,343 px<span class="dom"> — p:nth-of-type(4) width 664px→904px, height 128px→96px; p:nth-of-type(5) width 664px→904px, height 96px→64px; #emudhra-intermediate-certificate-compromise width 664px→904px, height 78px→39px</span></li></ul><div class="crops"><a class="crop" href="blog-metabase-doesnt-use-php.1000.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="blog-metabase-doesnt-use-php.1000.c1.webp"></a><a class="crop" href="blog-metabase-doesnt-use-php.1000.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="blog-metabase-doesnt-use-php.1000.c2.webp"></a><a class="crop" href="blog-metabase-doesnt-use-php.1000.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="blog-metabase-doesnt-use-php.1000.c3.webp"></a></div><p>text: 0 added, 66 removed</p><ul class="text"><li class="del">- New</li><li class="del">- Metabase 64: Security hardening, required 2FA, a better MCP server, Metabot on (almost) any model, and more.</li><li class="del">- Read the announcement</li><li class="del">- ×</li><li class="del">- Product</li><li class="del">- Business Intelligence</li><li class="del">- Self-service analytics for your team</li><li class="del">- Embedded Analytics</li><li class="del">- Fast, flexible customer-facing analytics</li><li class="del">- Data sources</li><li class="del">- Security</li><li class="del">- Cloud</li><li class="del">- Features</li><li class="del">- Metabase AI</li><li class="del">- Data Studio New</li><li class="del">- Dashboards and reporting</li><li class="del">- Query builder</li><li class="del">- Data segregation</li><li class="del">- Usage analytics</li><li class="del">- Embedded analytics SDK</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="blog-metabase-doesnt-use-php.1000.left.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1000.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="blog-metabase-doesnt-use-php.1000.right.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1000.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="blog-metabase-doesnt-use-php.1000.diff.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1000.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="blog-metabase-doesnt-use-php.1000.right.webp">
+    <div class="l"><img loading="lazy" src="blog-metabase-doesnt-use-php.1000.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="upgrade.1000">
+  <header>
+    <span class="score bad">80.44%</span>
+    <code>/upgrade</code>
+    <span class="w">@1000px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +804px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (581)</span>
+    
+    <span class="px">1,259,855 / 6,442,000 px differ</span>
+  </header>
+  <div class="findings"><p>52 region(s)</p><ul class="regions"><li>896×2016 at (48,432) — 219,721 px<span class="dom"> — section.group\/upgrade.bg-linear-to-b &gt; div.mx-auto.w-full height 2198.11px→1489.92px; section.group\/upgrade.bg-linear-to-b height 2326.11px→1617.92px; div.upgrade-container.pb-18 &gt; div.upgrade-panel.flex width 664px→904px, height 727.641px→708.391px</span></li><li>752×672 at (176,2512) — 65,246 px<span class="dom"> — div.upgrade-container.pb-18 &gt; div.upgrade-panel.flex width 664px→904px, height 727.641px→708.391px; div.upgrade-container.pt-7 width 720px→960px, height 377.25px→478.5px; div.relative.w-full &gt; div.absolute.w-full:nth-of-type(1) width 664px→904px, height 1290px→1180px</span></li><li>832×272 at (16,5024) — 37,310 px<span class="dom"> — main.\[\&amp;_p_a\]\:font-bold.\[\&amp;_p_a\]\:text-brand &gt; div.upgrade-container.py-4 &gt; div.-mx-3.my-4 width 688px→928px; div.site-footer-cols.flex y+804</span></li><li>656×256 at (176,144) — 26,441 px<span class="dom"> — div.mx-auto.pb-\[1\.2em\] width 1000px→500px, height 208.469px→245.75px; div.mb-12 y-82; section.group\/upgrade.bg-linear-to-b &gt; div.mx-auto.w-full height 2198.11px→1489.92px</span></li><li>928×304 at (32,4224) — 24,189 px<span class="dom"> — div.upgrade-panel-nested.px-3 width 688px→928px, height 869.75px→797.75px; main.\[\&amp;_p_a\]\:font-bold.\[\&amp;_p_a\]\:text-brand &gt; div.upgrade-container.py-4 &gt; div.-mx-3.my-4 width 688px→928px</span></li></ul><div class="crops"><a class="crop" href="upgrade.1000.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="upgrade.1000.c1.webp"></a><a class="crop" href="upgrade.1000.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="upgrade.1000.c2.webp"></a><a class="crop" href="upgrade.1000.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="upgrade.1000.c3.webp"></a></div><p>text: 0 added, 66 removed</p><ul class="text"><li class="del">- New</li><li class="del">- Metabase 64: Security hardening, required 2FA, a better MCP server, Metabot on (almost) any model, and more.</li><li class="del">- Read the announcement</li><li class="del">- ×</li><li class="del">- Product</li><li class="del">- Business Intelligence</li><li class="del">- Self-service analytics for your team</li><li class="del">- Embedded Analytics</li><li class="del">- Fast, flexible customer-facing analytics</li><li class="del">- Data sources</li><li class="del">- Security</li><li class="del">- Cloud</li><li class="del">- Features</li><li class="del">- Metabase AI</li><li class="del">- Data Studio New</li><li class="del">- Dashboards and reporting</li><li class="del">- Query builder</li><li class="del">- Data segregation</li><li class="del">- Usage analytics</li><li class="del">- Embedded analytics SDK</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="upgrade.1000.left.webp" target="_blank"><img loading="lazy" src="upgrade.1000.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="upgrade.1000.right.webp" target="_blank"><img loading="lazy" src="upgrade.1000.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="upgrade.1000.diff.webp" target="_blank"><img loading="lazy" src="upgrade.1000.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="upgrade.1000.right.webp">
+    <div class="l"><img loading="lazy" src="upgrade.1000.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="blog-metabase-doesnt-use-php.1440">
+  <header>
+    <span class="score bad">80.59%</span>
+    <code>/blog/metabase-doesnt-use-php</code>
+    <span class="w">@1440px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +174px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (471)</span>
+    
+    <span class="px">1,329,087 / 6,850,080 px differ</span>
+  </header>
+  <div class="findings"><p>68 region(s)</p><ul class="regions"><li>1280×1216 at (80,352) — 470,766 px<span class="dom"> — section.py-8:nth-of-type(1) width 1084px→1264px, height 974.812px→1094.81px; section.-mx-3.flex width 1108px→1288px, height 2197px→1881px</span></li><li>576×512 at (752,3296) — 209,445 px<span class="dom"> — div.mb-8.w-full:nth-of-type(2) &gt; div.blog-card width 530px→620px, height 579.172px→602.109px; section.mt-8.py-8 &gt; div.flex.flex-row:nth-of-type(1) width 1084px→1264px</span></li><li>640×448 at (400,2832) — 178,789 px<span class="dom"> — +div.mt-20; ul width 530px→620px, height 400px→336px; div.order-1.mt-12 width 277px→322px, height 2133px→1817px</span></li><li>576×464 at (112,3344) — 92,568 px<span class="dom"> — div.mb-8.w-full:nth-of-type(1) &gt; div.blog-card width 530px→620px, height 580.047px→595.25px; section.mt-8.py-8 &gt; div.flex.flex-row:nth-of-type(1) width 1084px→1264px</span></li><li>640×672 at (400,2144) — 36,374 px<span class="dom"> — ul width 530px→620px, height 400px→336px; p:nth-of-type(6) width 530px→620px, height 160px→128px</span></li></ul><div class="crops"><a class="crop" href="blog-metabase-doesnt-use-php.1440.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="blog-metabase-doesnt-use-php.1440.c1.webp"></a><a class="crop" href="blog-metabase-doesnt-use-php.1440.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="blog-metabase-doesnt-use-php.1440.c2.webp"></a><a class="crop" href="blog-metabase-doesnt-use-php.1440.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="blog-metabase-doesnt-use-php.1440.c3.webp"></a></div><p>text: 0 added, 1 removed</p><ul class="text"><li class="del">- 50k</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="blog-metabase-doesnt-use-php.1440.left.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1440.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="blog-metabase-doesnt-use-php.1440.right.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1440.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="blog-metabase-doesnt-use-php.1440.diff.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1440.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="blog-metabase-doesnt-use-php.1440.right.webp">
+    <div class="l"><img loading="lazy" src="blog-metabase-doesnt-use-php.1440.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1240">
+  <header>
+    <span class="score bad">83.16%</span>
+    <code>/</code>
+    <span class="w">@1240px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +970px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (471)</span>
+    
+    <span class="px">2,355,152 / 13,987,200 px differ</span>
+  </header>
+  <div class="findings"><p>74 region(s)</p><ul class="regions"><li>1056×1056 at (64,5568) — 385,016 px<span class="dom"> — div.ea-stage width 904px→1084px, height 909px→558px; section.embedded-analytics &gt; div.home-container width 960px→1140px, height 1607.97px→1228.97px</span></li><li>560×592 at (544,4608) — 170,769 px<span class="dom"> — +article.bi-panel.home-row:nth-of-type(3) &gt; div.home-col.home-col-lg-7; article.bi-panel.home-row:nth-of-type(3) &gt; div.home-col.home-col-lg-5 width 329.156px→404.156px, height 492.875px→405.109px</span></li><li>560×624 at (144,3904) — 133,577 px<span class="dom"> — +article.bi-panel.reverse &gt; div.home-col.home-col-lg-7; article.bi-panel.home-row:nth-of-type(3) width 904px→1084px, height 654.875px→646.547px</span></li><li>1200×2080 at (16,6672) — 116,407 px<span class="dom"> — div.full-width-centered.keeps-up-as-you-go padding-top 32px→80px, padding-right 24px→72px; section.love-revamp height 1687px→1423.75px; section.embedded-analytics height 1703.97px→1324.97px</span></li><li>560×752 at (544,3024) — 97,471 px<span class="dom"> — +article.bi-panel.home-row:nth-of-type(1) &gt; div.home-col.home-col-lg-7; article.bi-panel.home-row:nth-of-type(1) &gt; div.home-col.home-col-lg-5 width 329.156px→404.156px, height 564.625px→430.625px</span></li></ul><div class="crops"><a class="crop" href="index.1240.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="index.1240.c1.webp"></a><a class="crop" href="index.1240.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.1240.c2.webp"></a><a class="crop" href="index.1240.c3.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.1240.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="index.1240.left.webp" target="_blank"><img loading="lazy" src="index.1240.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="index.1240.right.webp" target="_blank"><img loading="lazy" src="index.1240.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1240.diff.webp" target="_blank"><img loading="lazy" src="index.1240.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1240.right.webp">
+    <div class="l"><img loading="lazy" src="index.1240.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="index.600">
+  <header>
+    <span class="score bad">83.63%</span>
+    <code>/</code>
+    <span class="w">@600px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -1125px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (34)</span>
+    
+    <span class="px">1,339,144 / 8,183,400 px differ</span>
+  </header>
+  <div class="findings"><p>57 region(s)</p><ul class="regions"><li>512×1088 at (48,3664) — 103,178 px<span class="dom"> — article.bi-panel.home-row:nth-of-type(1) width 544px→484px, height 897.625px→921.625px; article.bi-panel.reverse width 544px→484px, height 920.828px→857.625px</span></li><li>560×1216 at (16,6384) — 101,221 px<span class="dom"> — div.ea-stage width 544px→484px; section.embedded-analytics &gt; div.home-container &gt; div.home-row.justify-center:nth-of-type(1) width 568px→508px; section.embedded-analytics &gt; div.home-container width 600px→540px, height 1801px→1825px</span></li><li>512×736 at (48,4752) — 66,779 px<span class="dom"> — article.bi-panel.reverse width 544px→484px, height 920.828px→857.625px</span></li><li>512×624 at (48,5728) — 61,150 px<span class="dom"> — +article.bi-panel.home-row:nth-of-type(3) &gt; div.home-col.home-col-lg-7; article.bi-panel.home-row:nth-of-type(3) &gt; div.home-col.home-col-lg-5 width 502px→442px, height 316.109px→342.109px; article.bi-panel.home-row:nth-of-type(3) width 544px→484px, height 839.031px→811.375px</span></li><li>560×992 at (16,528) — 59,354 px<span class="dom"> — div.hero-demo y+54; div.hero-revamp-content height 290px→236px</span></li></ul><div class="crops"><a class="crop" href="index.600.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.600.c1.webp"></a><a class="crop" href="index.600.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.600.c2.webp"></a><a class="crop" href="index.600.c3.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.600.c3.webp"></a></div><p>text: 0 added, 22 removed</p><ul class="text"><li class="del">- I'm a big fan of Metabase. Write SQL - show chart.</li><li class="del">- Christopher Winslett</li><li class="del">- Metabase is the most impressive piece of software I’ve used in a long time. If you have data you want to understand give it a try. It’s so easy to spin up</li><li class="del">- Ryan Wilson</li><li class="del">- In terms of BI, there is no second best to Metabase.</li><li class="del">- Roberto</li><li class="del">- just setup a metabase instance at my friends startup and now the ops team is using it left right and centre. The model feature is a game changer. h/t to Metabase for building the most delightful and well thought tool for non tech folks.</li><li class="del">- 0xAHD</li><li class="del">- I’m forgetting how to write SQL queries 🤔 It’s all Metabase’s fault for having such an awesome query editor</li><li class="del">- Carlo Licciardi</li><li class="del">- Metabase is amazing. If you're a founder, especially non technical, get your engineers to install and set it up. It's transformational!</li><li class="del">- Neto</li><li class="del">- TIL about Metabase. Wow, the time we've wasted not using this is incalculable.</li><li class="del">- Derek Morgan</li><li class="del">- I love simple and efficient tools that are straightforward. I've been using Metabase and it is simply lovely</li><li class="del">- Mariana Medeiros</li><li class="del">- Metabase is really really awesome. I love the speed of implementation for new dashboards and reports. Totally awesome. Can't wait for new features. Might as well learn some clojure and contrib myself!</li><li class="del">- Kwamina Dare</li><li class="del">- Metabase proves you can add power without taking away simplicity.</li><li class="del">- Amjad Masad</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="index.600.left.webp" target="_blank"><img loading="lazy" src="index.600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="index.600.right.webp" target="_blank"><img loading="lazy" src="index.600.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.600.diff.webp" target="_blank"><img loading="lazy" src="index.600.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.600.right.webp">
+    <div class="l"><img loading="lazy" src="index.600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="learn-metabase-basics-getting-started-create-dashboards.1240">
+  <header>
+    <span class="score bad">84.08%</span>
+    <code>/learn/metabase-basics/getting-started/create-dashboards</code>
+    <span class="w">@1240px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -84px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (10)</span>
+    
+    <span class="px">425,805 / 2,674,680 px differ</span>
+  </header>
+  <div class="findings"><p>32 region(s)</p><ul class="regions"><li>912×768 at (16,976) — 157,215 px<span class="dom"> — div.site-footer-cols.flex y-84; article.learn__post &gt; div:nth-of-type(2) padding-right 40px→72px, width 720px→900px</span></li><li>912×544 at (64,416) — 125,743 px<span class="dom"> — +article.learn__post &gt; div:nth-of-type(2) &gt; div:nth-of-type(1); #was-this-helpful-widget width 680px→828px</span></li><li>112×96 at (1056,720) — 7,200 px<span class="dom"> — aside.right-sidebar x-90; article.learn__post &gt; div:nth-of-type(2) padding-right 40px→72px, width 720px→900px</span></li><li>304×48 at (880,16) — 6,864 px<span class="dom"> — div.nav-actions.flex width 236px→281px; div.submenus-container.group\/menus width 550.656px→655.656px</span></li><li>176×208 at (1040,1728) — 3,500 px<span class="dom"> — div.site-footer-col:nth-of-type(5) &gt; div.site-footer-group.mb-7:nth-of-type(2) y-84; a[href=&quot;http://localhost:4611/dashboards&quot;].flex.items-center y-84</span></li></ul><div class="crops"><a class="crop" href="learn-metabase-basics-getting-started-create-dashboards.1240.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1240.c1.webp"></a><a class="crop" href="learn-metabase-basics-getting-started-create-dashboards.1240.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1240.c2.webp"></a><a class="crop" href="learn-metabase-basics-getting-started-create-dashboards.1240.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1240.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1240.left.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1240.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1240.right.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1240.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1240.diff.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1240.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1240.right.webp">
+    <div class="l"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1240.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="blog-metabase-doesnt-use-php.600">
+  <header>
+    <span class="score bad">84.61%</span>
+    <code>/blog/metabase-doesnt-use-php</code>
+    <span class="w">@600px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -52px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (32)</span>
+    
+    <span class="px">520,621 / 3,383,400 px differ</span>
+  </header>
+  <div class="findings"><p>46 region(s)</p><ul class="regions"><li>512×640 at (48,3808) — 118,289 px<span class="dom"> — div.mb-8.w-full:nth-of-type(2) &gt; div.blog-card width 544px→484px, height 586.469px→555.172px; div.mb-8.w-full:nth-of-type(2) width 568px→508px, height 586.469px→555.172px; div.mb-8.w-full:nth-of-type(1) width 568px→508px, height 587.375px→579.984px</span></li><li>560×480 at (16,2560) — 107,794 px<span class="dom"> — +div.mt-20; div.order-1.mt-12 width 568px→508px</span></li><li>560×368 at (16,400) — 67,563 px<span class="dom"> — +img.w-full.rounded-xl; section.-mx-3.flex width 568px→508px, height 2265px→2396px</span></li><li>496×336 at (48,3216) — 62,876 px<span class="dom"> — +div.mb-8.w-full:nth-of-type(1) &gt; div.blog-card &gt; img.mb-8.w-full; +a[aria-label=&quot;Making pivot tables faster with GROUPING SETS&quot;].absolute.inset-0; div.mb-8.w-full:nth-of-type(1) &gt; div.blog-card &gt; span.mb-3.block width 496px→436px</span></li><li>560×320 at (16,1792) — 19,263 px<span class="dom"> — p:nth-of-type(6) width 544px→484px, height 160px→192px; #were-monitoring-our-dependencies width 544px→484px, height 39px→78px; #what-you-can-do width 544px→484px</span></li></ul><div class="crops"><a class="crop" href="blog-metabase-doesnt-use-php.600.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="blog-metabase-doesnt-use-php.600.c1.webp"></a><a class="crop" href="blog-metabase-doesnt-use-php.600.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="blog-metabase-doesnt-use-php.600.c2.webp"></a><a class="crop" href="blog-metabase-doesnt-use-php.600.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="blog-metabase-doesnt-use-php.600.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="blog-metabase-doesnt-use-php.600.left.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="blog-metabase-doesnt-use-php.600.right.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.600.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="blog-metabase-doesnt-use-php.600.diff.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.600.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="blog-metabase-doesnt-use-php.600.right.webp">
+    <div class="l"><img loading="lazy" src="blog-metabase-doesnt-use-php.600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="learn-metabase-basics-getting-started-create-dashboards.1440">
+  <header>
+    <span class="score bad">84.69%</span>
+    <code>/learn/metabase-basics/getting-started/create-dashboards</code>
+    <span class="w">@1440px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +67px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (13)</span>
+    
+    <span class="px">475,298 / 3,106,080 px differ</span>
+  </header>
+  <div class="findings"><p>44 region(s)</p><ul class="regions"><li>1072×1280 at (80,160) — 337,048 px<span class="dom"> — article.learn__post &gt; div:nth-of-type(2) width 900px→782px, height 1294.58px→1228.2px; -div.learn.blog-post &quot;COURSES Getting started Basic concepts A&quot;</span></li><li>112×96 at (1248,720) — 7,200 px<span class="dom"> — aside.right-sidebar x-90; article.learn__post &gt; div:nth-of-type(2) width 900px→782px, height 1294.58px→1228.2px</span></li><li>288×48 at (1072,16) — 7,044 px<span class="dom"> — div.nav-actions.flex &quot;Log in Get started&quot;→&quot;50k Log in Get started&quot;, width 281px→326px</span></li><li>176×208 at (1184,1696) — 2,827 px<span class="dom"> — div.site-footer-col:nth-of-type(5) &gt; div.site-footer-group.mb-7:nth-of-type(2) y+67; div.site-footer-col:nth-of-type(5) &gt; div.site-footer-group.mb-7:nth-of-type(1) y+67</span></li><li>112×128 at (928,1456) — 2,502 px<span class="dom"> — a[href=&quot;http://localhost:4611/jobs&quot;].flex.items-center y+67; div.site-footer-col:nth-of-type(4) &gt; div.site-footer-group.mb-7:nth-of-type(1) &gt; span.site-footer-heading.mb-3 y+67; +div.learn.blog-post &quot;Home Getting started Create a dashboard &quot;</span></li></ul><div class="crops"><a class="crop" href="learn-metabase-basics-getting-started-create-dashboards.1440.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1440.c1.webp"></a><a class="crop" href="learn-metabase-basics-getting-started-create-dashboards.1440.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1440.c2.webp"></a><a class="crop" href="learn-metabase-basics-getting-started-create-dashboards.1440.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1440.c3.webp"></a></div><p>text: 0 added, 32 removed</p><ul class="text"><li class="del">- 50k</li><li class="del">- COURSES</li><li class="del">- Getting started</li><li class="del">- Basic concepts</li><li class="del">- Ask a business question</li><li class="del">- Find data</li><li class="del">- Ask a question</li><li class="del">- Create a dashboard</li><li class="del">- Explore dashboards</li><li class="del">- Filter and limit data</li><li class="del">- Summarize data</li><li class="del">- Add custom columns</li><li class="del">- Use dashboard filters</li><li class="del">- Build models</li><li class="del">- METABASE TUTORIALS</li><li class="del">- Metabase overview</li><li class="del">- Querying and dashboards</li><li class="del">- Administration</li><li class="del">- GROW YOUR DATA SKILLS</li><li class="del">- Learn SQL</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1440.left.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1440.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1440.right.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1440.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1440.diff.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1440.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1440.right.webp">
+    <div class="l"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1440.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="blog-metabase-doesnt-use-php.1240">
+  <header>
+    <span class="score bad">84.78%</span>
+    <code>/blog/metabase-doesnt-use-php</code>
+    <span class="w">@1240px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +88px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (479)</span>
+    
+    <span class="px">913,994 / 6,007,800 px differ</span>
+  </header>
+  <div class="findings"><p>56 region(s)</p><ul class="regions"><li>1104×1168 at (64,352) — 382,967 px<span class="dom"> — section.py-8:nth-of-type(1) width 904px→1084px, height 854.812px→974.812px; section.-mx-3.flex width 928px→1108px, height 2428px→2197px</span></li><li>832×480 at (64,2944) — 127,762 px<span class="dom"> — +div.mt-20; div.order-1.mt-12 width 232px→277px, height 2364px→2133px; ul width 440px→530px, height 432px→400px</span></li><li>496×560 at (656,3488) — 120,770 px<span class="dom"> — div.mb-8.w-full:nth-of-type(2) width 464px→554px, height 556.953px→580.047px; div.mb-8.w-full:nth-of-type(2) &gt; div.blog-card width 440px→530px, height 532.234px→579.172px</span></li><li>496×400 at (96,3488) — 53,580 px<span class="dom"> — div.mb-8.w-full:nth-of-type(1) &gt; div.blog-card width 440px→530px, height 556.953px→580.047px; section.mt-8.py-8 &gt; div.flex.flex-row:nth-of-type(1) width 904px→1084px</span></li><li>528×432 at (352,1680) — 25,203 px<span class="dom"> — p:nth-of-type(4) width 440px→530px, height 192px→160px; p:nth-of-type(5) width 440px→530px, height 128px→96px; #emudhra-intermediate-certificate-compromise width 440px→530px</span></li></ul><div class="crops"><a class="crop" href="blog-metabase-doesnt-use-php.1240.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="blog-metabase-doesnt-use-php.1240.c1.webp"></a><a class="crop" href="blog-metabase-doesnt-use-php.1240.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="blog-metabase-doesnt-use-php.1240.c2.webp"></a><a class="crop" href="blog-metabase-doesnt-use-php.1240.c3.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="blog-metabase-doesnt-use-php.1240.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="blog-metabase-doesnt-use-php.1240.left.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1240.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="blog-metabase-doesnt-use-php.1240.right.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1240.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="blog-metabase-doesnt-use-php.1240.diff.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1240.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="blog-metabase-doesnt-use-php.1240.right.webp">
+    <div class="l"><img loading="lazy" src="blog-metabase-doesnt-use-php.1240.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="product-embedded-analytics.1000">
+  <header>
+    <span class="score bad">87.04%</span>
+    <code>/product/embedded-analytics</code>
+    <span class="w">@1000px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -289px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (250)</span>
+    
+    <span class="px">1,812,154 / 13,988,000 px differ</span>
+  </header>
+  <div class="findings"><p>101 region(s)</p><ul class="regions"><li>704×304 at (48,8352) — 197,365 px<span class="dom"> — section.full-width-centered.bg-blue y-288; div.embedding-page.embedded-analytics &gt; div.container height 10353.3px→10598.2px; div.d-none.d-lg-flex y-288</span></li><li>832×304 at (48,8000) — 189,970 px<span class="dom"> — div.d-none.d-lg-flex y-288; section.full-width-centered.bg-blue y-288; div.embedding-page.embedded-analytics &gt; div.container height 10353.3px→10598.2px</span></li><li>912×1024 at (48,5296) — 173,628 px<span class="dom"> — section.embedding-options.the-right-implementation-type &gt; div y-194; section.easy-to-use-for-all-types-of-customers height 802.938px→897.812px; section.embedding-options.the-right-implementation-type y-194; section.bg-neutral-98.px-lg-14 height 846.891px→996.938px</span></li><li>912×2016 at (48,8672) — 107,432 px<span class="dom"> — section.feature-container.background-color-both-sides y-289; div.embedding-page.embedded-analytics &gt; div.container height 10353.3px→10598.2px; div.feature-container.track-how-your-in-app-reporting y-288; section.pros-cons-comparison-lists y-289</span></li><li>848×624 at (112,6640) — 95,377 px<span class="dom"> — #easy-to-use-metabot-ai-panel height 400.156px→507.812px; div.full-width-centered.container:nth-of-type(6) y-288; section.easy-to-use-for-all-types-of-customers height 802.938px→897.812px; section.easy-to-use-for-all-types-of-customers &gt; div.tabs-with-timer height 528.938px→623.812px</span></li></ul><div class="crops"><a class="crop" href="product-embedded-analytics.1000.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="product-embedded-analytics.1000.c1.webp"></a><a class="crop" href="product-embedded-analytics.1000.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="product-embedded-analytics.1000.c2.webp"></a><a class="crop" href="product-embedded-analytics.1000.c3.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="product-embedded-analytics.1000.c3.webp"></a></div><p>text: 0 added, 66 removed</p><ul class="text"><li class="del">- New</li><li class="del">- Metabase 64: Security hardening, required 2FA, a better MCP server, Metabot on (almost) any model, and more.</li><li class="del">- Read the announcement</li><li class="del">- ×</li><li class="del">- Product</li><li class="del">- Business Intelligence</li><li class="del">- Self-service analytics for your team</li><li class="del">- Embedded Analytics</li><li class="del">- Fast, flexible customer-facing analytics</li><li class="del">- Data sources</li><li class="del">- Security</li><li class="del">- Cloud</li><li class="del">- Features</li><li class="del">- Metabase AI</li><li class="del">- Data Studio New</li><li class="del">- Dashboards and reporting</li><li class="del">- Query builder</li><li class="del">- Data segregation</li><li class="del">- Usage analytics</li><li class="del">- Embedded analytics SDK</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="product-embedded-analytics.1000.left.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.1000.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="product-embedded-analytics.1000.right.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.1000.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="product-embedded-analytics.1000.diff.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.1000.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="product-embedded-analytics.1000.right.webp">
+    <div class="l"><img loading="lazy" src="product-embedded-analytics.1000.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="upgrade.1240">
+  <header>
+    <span class="score bad">88.74%</span>
+    <code>/upgrade</code>
+    <span class="w">@1240px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +363px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (799)</span>
+    
+    <span class="px">726,278 / 6,455,440 px differ</span>
+  </header>
+  <div class="findings"><p>59 region(s)</p><ul class="regions"><li>896×752 at (176,1760) — 97,783 px<span class="dom"> — div.upgrade-container.pb-18 &gt; div.upgrade-panel.flex width 904px→903px, height 708.391px→424.141px; div.upgrade-container.pb-18 width 960px→1140px, height 780.391px→496.141px; div.upgrade-container.pt-7 width 960px→1140px, height 478.5px→401.25px</span></li><li>928×320 at (160,3824) — 20,682 px<span class="dom"> — div.upgrade-panel-nested.px-3 width 928px→923px; main.\[\&amp;_p_a\]\:font-bold.\[\&amp;_p_a\]\:text-brand &gt; div.upgrade-container.py-4 &gt; div.-mx-3.my-4 width 928px→1108px, height 272.078px→271.906px; div.upgrade-container.mt-4 width 960px→1140px</span></li><li>1008×384 at (160,4208) — 18,363 px<span class="dom"> — main.\[\&amp;_p_a\]\:font-bold.\[\&amp;_p_a\]\:text-brand &gt; div.upgrade-container.py-4 width 960px→1140px, height 336.078px→335.906px; div.site-footer-cols.flex y+363</span></li><li>912×144 at (160,3120) — 16,326 px<span class="dom"> — div.upgrade-container.mt-12 &gt; div.upgrade-panel.flex width 904px→903px; div.absolute.w-full:nth-of-type(1) &gt; figure.mb-6.rounded-lg:nth-of-type(7) width 840px→387.5px, height 132px→154px; div.absolute.w-full:nth-of-type(2) &gt; figure.mb-6.rounded-lg:nth-of-type(7) width 840px→387.5px, height 132px→154px</span></li><li>432×752 at (176,528) — 15,996 px<span class="dom"> — li.mb-6.h-fit:nth-of-type(1) &gt; div.upgrade-card.mx-auto width 432px→431.5px</span></li></ul><div class="crops"><a class="crop" href="upgrade.1240.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="upgrade.1240.c1.webp"></a><a class="crop" href="upgrade.1240.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="upgrade.1240.c2.webp"></a><a class="crop" href="upgrade.1240.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="upgrade.1240.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="upgrade.1240.left.webp" target="_blank"><img loading="lazy" src="upgrade.1240.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="upgrade.1240.right.webp" target="_blank"><img loading="lazy" src="upgrade.1240.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="upgrade.1240.diff.webp" target="_blank"><img loading="lazy" src="upgrade.1240.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="upgrade.1240.right.webp">
+    <div class="l"><img loading="lazy" src="upgrade.1240.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="upgrade.600">
+  <header>
+    <span class="score bad">89.15%</span>
+    <code>/upgrade</code>
+    <span class="w">@600px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -85px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (363)</span>
+    
+    <span class="px">436,111 / 4,022,400 px differ</span>
+  </header>
+  <div class="findings"><p>38 region(s)</p><ul class="regions"><li>464×1504 at (64,848) — 94,423 px<span class="dom"> — li.mb-6.h-fit:nth-of-type(2) width 568px→484px; li.mb-6.h-fit:nth-of-type(1) width 568px→484px</span></li><li>544×720 at (32,2496) — 76,901 px<span class="dom"> — div.upgrade-container.pb-18 &gt; div.upgrade-panel.flex width 544px→484px</span></li><li>576×368 at (16,5232) — 47,322 px<span class="dom"> — main.\[\&amp;_p_a\]\:font-bold.\[\&amp;_p_a\]\:text-brand &gt; div.upgrade-container.py-4 width 600px→540px, height 333.516px→359.516px; div.site-footer-cols.flex y-85; div.upgrade-container.mt-4 width 600px→540px, height 993.75px→1041.75px</span></li><li>416×320 at (96,512) — 32,247 px<span class="dom"> — li.mb-6.h-fit:nth-of-type(1) &gt; div.upgrade-card.mx-auto y-36; li.mb-6.h-fit:nth-of-type(1) &gt; div.invisible.mb-\[13px\] width 568px→484px</span></li><li>496×288 at (48,112) — 24,875 px<span class="dom"> — div.mx-auto.pb-\[1\.2em\] height 231.094px→235.094px; div.mb-12 y-36; section.group\/upgrade.bg-linear-to-b &gt; div.mx-auto.w-full height 2220.73px→2224.73px</span></li></ul><div class="crops"><a class="crop" href="upgrade.600.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="upgrade.600.c1.webp"></a><a class="crop" href="upgrade.600.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="upgrade.600.c2.webp"></a><a class="crop" href="upgrade.600.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="upgrade.600.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="upgrade.600.left.webp" target="_blank"><img loading="lazy" src="upgrade.600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="upgrade.600.right.webp" target="_blank"><img loading="lazy" src="upgrade.600.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="upgrade.600.diff.webp" target="_blank"><img loading="lazy" src="upgrade.600.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="upgrade.600.right.webp">
+    <div class="l"><img loading="lazy" src="upgrade.600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="learn-metabase-basics-getting-started-create-dashboards.1000">
+  <header>
+    <span class="score bad">89.96%</span>
+    <code>/learn/metabase-basics/getting-started/create-dashboards</code>
+    <span class="w">@1000px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +17px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (10)</span>
+    
+    <span class="px">253,894 / 2,529,000 px differ</span>
+  </header>
+  <div class="findings"><p>17 region(s)</p><ul class="regions"><li>928×544 at (32,304) — 116,689 px<span class="dom"> — article.learn__post &gt; div:nth-of-type(2) &gt; div:nth-of-type(1) width 678px→680px, height 381.375px→382.5px; blockquote width 678px→680px</span></li><li>816×464 at (32,896) — 79,017 px<span class="dom"> — article.learn__post &gt; div:nth-of-type(2) padding-right 0px→40px, width 678px→720px</span></li><li>1000×144 at (0,0) — 11,012 px<span class="dom"> — header.site-header.top-0 &quot;Get started&quot;→&quot;Product Business Intelligence Self-servi&quot;, position sticky→static; #top-bar &quot;&quot;→&quot;Home Getting started&quot;, position fixed→absolute; nav[aria-label=&quot;Breadcrumb&quot;].breadcrumbs.inline display block→none, width 678px→auto</span></li><li>672×112 at (32,160) — 5,969 px<span class="dom"> — div:nth-of-type(2) &gt; header width 678px→680px</span></li><li>176×496 at (16,1888) — 5,850 px<span class="dom"> — div.site-footer-col:nth-of-type(5) y+17</span></li></ul><div class="crops"><a class="crop" href="learn-metabase-basics-getting-started-create-dashboards.1000.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1000.c1.webp"></a><a class="crop" href="learn-metabase-basics-getting-started-create-dashboards.1000.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1000.c2.webp"></a><a class="crop" href="learn-metabase-basics-getting-started-create-dashboards.1000.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1000.c3.webp"></a></div><p>text: 0 added, 64 removed</p><ul class="text"><li class="del">- Product</li><li class="del">- Business Intelligence</li><li class="del">- Self-service analytics for your team</li><li class="del">- Embedded Analytics</li><li class="del">- Fast, flexible customer-facing analytics</li><li class="del">- Data sources</li><li class="del">- Security</li><li class="del">- Cloud</li><li class="del">- Features</li><li class="del">- Metabase AI</li><li class="del">- Data Studio New</li><li class="del">- Dashboards and reporting</li><li class="del">- Query builder</li><li class="del">- Data segregation</li><li class="del">- Usage analytics</li><li class="del">- Embedded analytics SDK</li><li class="del">- White-label analytics</li><li class="del">- Drill-through</li><li class="del">- SQL editor</li><li class="del">- Permissions</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1000.left.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1000.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1000.right.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1000.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1000.diff.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1000.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1000.right.webp">
+    <div class="l"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1000.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1440">
+  <header>
+    <span class="score bad">90.44%</span>
+    <code>/</code>
+    <span class="w">@1440px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -21px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (473)</span>
+    
+    <span class="px">1,426,461 / 14,932,800 px differ</span>
+  </header>
+  <div class="findings"><p>67 region(s)</p><ul class="regions"><li>1232×944 at (80,5680) — 515,133 px<span class="dom"> — section.embedded-analytics &gt; div.home-container width 1140px→1320px, height 1228.97px→1179.97px</span></li><li>688×768 at (608,4688) — 239,791 px<span class="dom"> — article.bi-panel.home-row:nth-of-type(3) width 1084px→1264px, height 646.547px→740.438px; section.embedded-analytics height 1324.97px→1275.97px; -article.bi-panel.home-row:nth-of-type(3) &gt; div.home-col.home-col-lg-7</span></li><li>672×704 at (144,3936) — 136,640 px<span class="dom"> — +article.bi-panel.reverse &gt; div.home-col.home-col-lg-7; article.bi-panel.home-row:nth-of-type(3) width 1084px→1264px, height 646.547px→740.438px</span></li><li>672×720 at (624,3056) — 76,662 px<span class="dom"> — +article.bi-panel.home-row:nth-of-type(1) &gt; div.home-col.home-col-lg-7; article.bi-panel.home-row:nth-of-type(1) &gt; div.home-col.home-col-lg-5 width 404.156px→479.156px, height 430.625px→404.625px</span></li><li>1344×1008 at (48,6816) — 55,459 px<span class="dom"> — div.full-width-centered.keeps-up-as-you-go width 1140px→1320px, height 828px→804px; section.love-revamp height 1423.75px→1307.5px</span></li></ul><div class="crops"><a class="crop" href="index.1440.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="index.1440.c1.webp"></a><a class="crop" href="index.1440.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.1440.c2.webp"></a><a class="crop" href="index.1440.c3.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.1440.c3.webp"></a></div><p>text: 0 added, 1 removed</p><ul class="text"><li class="del">- 50k</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="index.1440.left.webp" target="_blank"><img loading="lazy" src="index.1440.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="index.1440.right.webp" target="_blank"><img loading="lazy" src="index.1440.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1440.diff.webp" target="_blank"><img loading="lazy" src="index.1440.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1440.right.webp">
+    <div class="l"><img loading="lazy" src="index.1440.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="pricing.1000">
+  <header>
+    <span class="score bad">92.86%</span>
+    <code>/pricing</code>
+    <span class="w">@1000px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -44px</span>
+    
+    
+    
+    <span class="aligned">aligned 99.83%</span>
+    <span class="w">dom differs (250)</span>
+    
+    <span class="px">380,064 / 5,324,000 px differ</span>
+  </header>
+  <div class="findings"><p>2 region(s)</p><ul class="regions"><li>352×92 at (320,768) — 5,868 px</li><li>944×108 at (32,800) — 2,932 px</li></ul><div class="crops"><a class="crop" href="pricing.1000.c1.webp" target="_blank" title="band, left on top"><img loading="lazy" src="pricing.1000.c1.webp"></a><a class="crop" href="pricing.1000.c2.webp" target="_blank" title="band, left on top"><img loading="lazy" src="pricing.1000.c2.webp"></a><a class="crop" href="pricing.1000.c3.webp" target="_blank" title="band, left on top"><img loading="lazy" src="pricing.1000.c3.webp"></a></div><ul class="bands"><li>band -50px at y=0 (right)</li><li>band -42px at y=64 (right)</li><li>band +48px at y=18 (left)</li><li>band +44px at y=803 (left)</li><li>band -44px at y=905 (right)</li></ul><p>text: 0 added, 66 removed</p><ul class="text"><li class="del">- New</li><li class="del">- Metabase 64: Security hardening, required 2FA, a better MCP server, Metabot on (almost) any model, and more.</li><li class="del">- Read the announcement</li><li class="del">- ×</li><li class="del">- Product</li><li class="del">- Business Intelligence</li><li class="del">- Self-service analytics for your team</li><li class="del">- Embedded Analytics</li><li class="del">- Fast, flexible customer-facing analytics</li><li class="del">- Data sources</li><li class="del">- Security</li><li class="del">- Cloud</li><li class="del">- Features</li><li class="del">- Metabase AI</li><li class="del">- Data Studio New</li><li class="del">- Dashboards and reporting</li><li class="del">- Query builder</li><li class="del">- Data segregation</li><li class="del">- Usage analytics</li><li class="del">- Embedded analytics SDK</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="pricing.1000.left.webp" target="_blank"><img loading="lazy" src="pricing.1000.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="pricing.1000.right.webp" target="_blank"><img loading="lazy" src="pricing.1000.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="pricing.1000.diff.webp" target="_blank"><img loading="lazy" src="pricing.1000.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="pricing.1000.right.webp">
+    <div class="l"><img loading="lazy" src="pricing.1000.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="learn-metabase-basics-getting-started-create-dashboards.600">
+  <header>
+    <span class="score bad">92.89%</span>
+    <code>/learn/metabase-basics/getting-started/create-dashboards</code>
+    <span class="w">@600px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -30px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (10)</span>
+    
+    <span class="px">109,269 / 1,537,200 px differ</span>
+  </header>
+  <div class="findings"><p>31 region(s)</p><ul class="regions"><li>512×576 at (48,848) — 38,666 px<span class="dom"> — article.learn__post &gt; div:nth-of-type(2) width 450px→490px, height 1245.95px→1276.45px</span></li><li>512×320 at (48,480) — 18,746 px<span class="dom"> — +article.learn__post &gt; div:nth-of-type(2) &gt; div:nth-of-type(1); article.learn__post &gt; div:nth-of-type(2) &gt; p width 450px→490px; #was-this-helpful-widget width 450px→490px</span></li><li>128×240 at (208,1936) — 3,729 px<span class="dom"> — div.site-footer-col:nth-of-type(4) &gt; div.site-footer-group.mb-7:nth-of-type(1) y-30; div.site-footer-col:nth-of-type(4) &gt; div.site-footer-group.mb-7:nth-of-type(2) y-30</span></li><li>176×288 at (16,1936) — 3,440 px<span class="dom"> — div.site-footer-col:nth-of-type(3) &gt; div.site-footer-group.mb-7 y-30</span></li><li>600×84 at (0,2448) — 3,331 px<span class="dom"> — div.site-footer-bottom.mx-auto y-30; div.site-footer-cols.flex y-30</span></li></ul><div class="crops"><a class="crop" href="learn-metabase-basics-getting-started-create-dashboards.600.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.600.c1.webp"></a><a class="crop" href="learn-metabase-basics-getting-started-create-dashboards.600.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.600.c2.webp"></a><a class="crop" href="learn-metabase-basics-getting-started-create-dashboards.600.c3.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.600.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.600.left.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.600.right.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.600.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.600.diff.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.600.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.600.right.webp">
+    <div class="l"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="blog-metabase-doesnt-use-php.1600">
+  <header>
+    <span class="score bad">94.86%</span>
+    <code>/blog/metabase-doesnt-use-php</code>
+    <span class="w">@1600px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +60px</span>
+    
+    
+    
+    <span class="aligned">aligned 99.99%</span>
+    <span class="w">dom differs (474)</span>
+    
+    <span class="px">381,202 / 7,428,800 px differ</span>
+  </header>
+  <div class="findings"><p>2 region(s)</p><ul class="regions"><li>560×20 at (192,3804) — 566 px</li><li>32×20 at (192,3872) — 28 px</li></ul><div class="crops"><a class="crop" href="blog-metabase-doesnt-use-php.1600.c1.webp" target="_blank" title="band, left on top"><img loading="lazy" src="blog-metabase-doesnt-use-php.1600.c1.webp"></a><a class="crop" href="blog-metabase-doesnt-use-php.1600.c2.webp" target="_blank" title="band, left on top"><img loading="lazy" src="blog-metabase-doesnt-use-php.1600.c2.webp"></a><a class="crop" href="blog-metabase-doesnt-use-php.1600.c3.webp" target="_blank" title="band, left on top"><img loading="lazy" src="blog-metabase-doesnt-use-php.1600.c3.webp"></a></div><ul class="bands"><li>band +60px at y=3082 (left)<span class="dom"> — +div.mt-20</span></li><li>band -4px at y=3743 (right)</li><li>band +4px at y=3815 (left)</li><li>band -2px at y=3799 (right)</li><li>band -2px at y=3811 (right)</li><li>band +4px at y=3876 (left)</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="blog-metabase-doesnt-use-php.1600.left.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="blog-metabase-doesnt-use-php.1600.right.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1600.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="blog-metabase-doesnt-use-php.1600.diff.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1600.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="blog-metabase-doesnt-use-php.1600.right.webp">
+    <div class="l"><img loading="lazy" src="blog-metabase-doesnt-use-php.1600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="upgrade.1440">
+  <header>
+    <span class="score bad">96.72%</span>
+    <code>/upgrade</code>
+    <span class="w">@1440px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +5px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (802)</span>
+    
+    <span class="px">228,539 / 6,973,920 px differ</span>
+  </header>
+  <div class="findings"><p>80 region(s)</p><ul class="regions"><li>432×400 at (736,1760) — 40,619 px<span class="dom"> — div.upgrade-panel.flex &gt; div.flex.w-full:nth-of-type(2) width 451.5px→421.5px</span></li><li>448×1152 at (720,528) — 24,433 px<span class="dom"> — li.mb-6.h-fit:nth-of-type(2) width 443.5px→413.5px, height 1147.64px→1166.53px</span></li><li>448×768 at (272,528) — 22,928 px<span class="dom"> — li.mb-6.h-fit:nth-of-type(1) width 443.5px→413.5px, height 761.141px→780.031px</span></li><li>656×240 at (368,2272) — 20,887 px<span class="dom"> — div.upgrade-container.pt-7 &gt; div.-mx-3.flex &gt; div.w-full.px-3 width 646.328px→751.328px, height 325.25px→301.25px; div.absolute.w-full:nth-of-type(1) &gt; figure.mb-6.rounded-lg:nth-of-type(4) width 387.5px→357.5px, height 198px→220px; div.absolute.w-full:nth-of-type(2) &gt; figure.mb-6.rounded-lg:nth-of-type(4) width 387.5px→357.5px, height 198px→220px</span></li><li>912×144 at (256,3120) — 13,934 px<span class="dom"> — div.upgrade-panel-nested.px-3 &gt; p.text-base.leading-6:nth-of-type(1) width 899px→835px; div.absolute.w-full:nth-of-type(1) &gt; figure.mb-6.rounded-lg:nth-of-type(7) width 387.5px→357.5px; div.absolute.w-full:nth-of-type(2) &gt; figure.mb-6.rounded-lg:nth-of-type(7) width 387.5px→357.5px</span></li></ul><div class="crops"><a class="crop" href="upgrade.1440.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="upgrade.1440.c1.webp"></a><a class="crop" href="upgrade.1440.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="upgrade.1440.c2.webp"></a><a class="crop" href="upgrade.1440.c3.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="upgrade.1440.c3.webp"></a></div><p>text: 0 added, 1 removed</p><ul class="text"><li class="del">- 50k</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="upgrade.1440.left.webp" target="_blank"><img loading="lazy" src="upgrade.1440.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="upgrade.1440.right.webp" target="_blank"><img loading="lazy" src="upgrade.1440.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="upgrade.1440.diff.webp" target="_blank"><img loading="lazy" src="upgrade.1440.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="upgrade.1440.right.webp">
+    <div class="l"><img loading="lazy" src="upgrade.1440.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="pricing.1240">
+  <header>
+    <span class="score good">99.84%</span>
+    <code>/pricing</code>
+    <span class="w">@1240px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (468)</span>
+    
+    <span class="px">9,163 / 5,965,640 px differ</span>
+  </header>
+  <div class="findings"><p>7 region(s)</p><ul class="regions"><li>304×48 at (880,64) — 6,864 px<span class="dom"> — div.nav-actions.flex width 236px→281px; div.submenus-container.group\/menus width 550.656px→655.656px</span></li><li>240×48 at (64,64) — 1,107 px<span class="dom"> — +div.home-link.flex; div.submenus-container.group\/menus width 550.656px→655.656px</span></li><li>96×16 at (624,80) — 321 px<span class="dom"> — #resources-nav-button-desktop &gt; div.flex.items-center x+7</span></li><li>96×16 at (432,80) — 274 px<span class="dom"> — #features-nav-button-desktop &gt; div.flex.items-center x+8</span></li><li>96×16 at (736,80) — 255 px<span class="dom"> — #pricing-nav-button-desktop &gt; div.flex.items-center x+8</span></li></ul><div class="crops"><a class="crop" href="pricing.1240.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="pricing.1240.c1.webp"></a><a class="crop" href="pricing.1240.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="pricing.1240.c2.webp"></a><a class="crop" href="pricing.1240.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="pricing.1240.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="pricing.1240.left.webp" target="_blank"><img loading="lazy" src="pricing.1240.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="pricing.1240.right.webp" target="_blank"><img loading="lazy" src="pricing.1240.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="pricing.1240.diff.webp" target="_blank"><img loading="lazy" src="pricing.1240.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="pricing.1240.right.webp">
+    <div class="l"><img loading="lazy" src="pricing.1240.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="events-dataconnect-26.1240">
+  <header>
+    <span class="score good">99.84%</span>
+    <code>/events/dataconnect-26</code>
+    <span class="w">@1240px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (472)</span>
+    
+    <span class="px">9,157 / 5,865,200 px differ</span>
+  </header>
+  <div class="findings"><p>7 region(s)</p><ul class="regions"><li>304×48 at (880,64) — 6,858 px<span class="dom"> — div.nav-actions.flex width 236px→281px; div.submenus-container.group\/menus width 550.656px→655.656px</span></li><li>240×48 at (64,64) — 1,107 px<span class="dom"> — +div.home-link.flex; div.submenus-container.group\/menus width 550.656px→655.656px</span></li><li>96×16 at (624,80) — 321 px<span class="dom"> — #resources-nav-button-desktop &gt; div.flex.items-center x+7</span></li><li>96×16 at (432,80) — 274 px<span class="dom"> — #features-nav-button-desktop &gt; div.flex.items-center x+8</span></li><li>96×16 at (736,80) — 255 px<span class="dom"> — #pricing-nav-button-desktop &gt; div.flex.items-center x+8</span></li></ul><div class="crops"><a class="crop" href="events-dataconnect-26.1240.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="events-dataconnect-26.1240.c1.webp"></a><a class="crop" href="events-dataconnect-26.1240.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="events-dataconnect-26.1240.c2.webp"></a><a class="crop" href="events-dataconnect-26.1240.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="events-dataconnect-26.1240.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="events-dataconnect-26.1240.left.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1240.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="events-dataconnect-26.1240.right.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1240.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="events-dataconnect-26.1240.diff.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1240.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="events-dataconnect-26.1240.right.webp">
+    <div class="l"><img loading="lazy" src="events-dataconnect-26.1240.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="pricing.1440">
+  <header>
+    <span class="score good">99.86%</span>
+    <code>/pricing</code>
+    <span class="w">@1440px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (471)</span>
+    
+    <span class="px">9,369 / 6,963,840 px differ</span>
+  </header>
+  <div class="findings"><p>7 region(s)</p><ul class="regions"><li>288×48 at (1072,64) — 7,044 px<span class="dom"> — div.nav-actions.flex &quot;Log in Get started&quot;→&quot;50k Log in Get started&quot;, width 281px→326px</span></li><li>224×48 at (80,64) — 1,107 px<span class="dom"> — +div.home-link.flex; div.submenus-container.group\/menus width 655.656px→760.656px</span></li><li>96×16 at (720,80) — 313 px<span class="dom"> — #resources-nav-button-desktop &gt; div.flex.items-center x+8</span></li><li>96×16 at (528,80) — 283 px<span class="dom"> — #features-nav-button-desktop &gt; div.flex.items-center x+7</span></li><li>80×16 at (832,80) — 281 px<span class="dom"> — #pricing-nav-button-desktop &gt; div.flex.items-center x+7</span></li></ul><div class="crops"><a class="crop" href="pricing.1440.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="pricing.1440.c1.webp"></a><a class="crop" href="pricing.1440.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="pricing.1440.c2.webp"></a><a class="crop" href="pricing.1440.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="pricing.1440.c3.webp"></a></div><p>text: 0 added, 1 removed</p><ul class="text"><li class="del">- 50k</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="pricing.1440.left.webp" target="_blank"><img loading="lazy" src="pricing.1440.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="pricing.1440.right.webp" target="_blank"><img loading="lazy" src="pricing.1440.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="pricing.1440.diff.webp" target="_blank"><img loading="lazy" src="pricing.1440.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="pricing.1440.right.webp">
+    <div class="l"><img loading="lazy" src="pricing.1440.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="events-dataconnect-26.1440">
+  <header>
+    <span class="score good">99.86%</span>
+    <code>/events/dataconnect-26</code>
+    <span class="w">@1440px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (475)</span>
+    
+    <span class="px">9,363 / 6,780,960 px differ</span>
+  </header>
+  <div class="findings"><p>7 region(s)</p><ul class="regions"><li>288×48 at (1072,64) — 7,038 px<span class="dom"> — div.nav-actions.flex &quot;Log in Get started&quot;→&quot;50k Log in Get started&quot;, width 281px→326px</span></li><li>224×48 at (80,64) — 1,107 px<span class="dom"> — +div.home-link.flex; div.submenus-container.group\/menus width 655.656px→760.656px</span></li><li>96×16 at (720,80) — 313 px<span class="dom"> — #resources-nav-button-desktop &gt; div.flex.items-center x+8</span></li><li>96×16 at (528,80) — 283 px<span class="dom"> — #features-nav-button-desktop &gt; div.flex.items-center x+7</span></li><li>80×16 at (832,80) — 281 px<span class="dom"> — #pricing-nav-button-desktop &gt; div.flex.items-center x+7</span></li></ul><div class="crops"><a class="crop" href="events-dataconnect-26.1440.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="events-dataconnect-26.1440.c1.webp"></a><a class="crop" href="events-dataconnect-26.1440.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="events-dataconnect-26.1440.c2.webp"></a><a class="crop" href="events-dataconnect-26.1440.c3.webp" target="_blank" title="region, left on top"><img loading="lazy" src="events-dataconnect-26.1440.c3.webp"></a></div><p>text: 0 added, 1 removed</p><ul class="text"><li class="del">- 50k</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="events-dataconnect-26.1440.left.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1440.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="events-dataconnect-26.1440.right.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1440.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="events-dataconnect-26.1440.diff.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1440.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="events-dataconnect-26.1440.right.webp">
+    <div class="l"><img loading="lazy" src="events-dataconnect-26.1440.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="pricing.600">
+  <header>
+    <span class="score good">99.91%</span>
+    <code>/pricing</code>
+    <span class="w">@600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (32)</span>
+    
+    <span class="px">3,462 / 3,872,400 px differ</span>
+  </header>
+  <div class="findings"><p>2 region(s)</p><ul class="regions"><li>192×48 at (384,16) — 2,657 px<span class="dom"> — #get-started-btn x+30; div.nav-actions.flex width 430.625px→370.625px; #mobile-nav-hamburger-wrapper x+30</span></li><li>176×48 at (16,16) — 805 px<span class="dom"> — div.home-link.flex x-30; div.-mx-3.flex width 584px→524px; div.nav-actions.flex width 430.625px→370.625px</span></li></ul><div class="crops"><a class="crop" href="pricing.600.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="pricing.600.c1.webp"></a><a class="crop" href="pricing.600.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="pricing.600.c2.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="pricing.600.left.webp" target="_blank"><img loading="lazy" src="pricing.600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="pricing.600.right.webp" target="_blank"><img loading="lazy" src="pricing.600.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="pricing.600.diff.webp" target="_blank"><img loading="lazy" src="pricing.600.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="pricing.600.right.webp">
+    <div class="l"><img loading="lazy" src="pricing.600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="events-dataconnect-26.600">
+  <header>
+    <span class="score good">99.92%</span>
+    <code>/events/dataconnect-26</code>
+    <span class="w">@600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (36)</span>
+    
+    <span class="px">3,461 / 4,349,400 px differ</span>
+  </header>
+  <div class="findings"><p>2 region(s)</p><ul class="regions"><li>192×48 at (384,16) — 2,656 px<span class="dom"> — #get-started-btn x+30; div.nav-actions.flex width 430.625px→370.625px; #mobile-nav-hamburger-wrapper x+30</span></li><li>176×48 at (16,16) — 805 px<span class="dom"> — div.home-link.flex x-30; div.-mx-3.flex width 584px→524px; div.nav-actions.flex width 430.625px→370.625px</span></li></ul><div class="crops"><a class="crop" href="events-dataconnect-26.600.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="events-dataconnect-26.600.c1.webp"></a><a class="crop" href="events-dataconnect-26.600.c2.webp" target="_blank" title="region, left on top"><img loading="lazy" src="events-dataconnect-26.600.c2.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="events-dataconnect-26.600.left.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="events-dataconnect-26.600.right.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.600.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="events-dataconnect-26.600.diff.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.600.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="events-dataconnect-26.600.right.webp">
+    <div class="l"><img loading="lazy" src="events-dataconnect-26.600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="changelog.1240">
+  <header>
+    <span class="score good">99.97%</span>
+    <code>/changelog</code>
+    <span class="w">@1240px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (11)</span>
+    
+    <span class="px">580 / 2,222,080 px differ</span>
+  </header>
+  <div class="findings"><p>1 region(s)</p><ul class="regions"><li>144×48 at (880,128) — 580 px<span class="dom"> — #top-bar &quot;&quot;→&quot;What's new&quot;; a[href=&quot;http://localhost:4611/releases&quot;].whats-new display none→flex, width auto→126.828px</span></li></ul><div class="crops"><a class="crop" href="changelog.1240.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="changelog.1240.c1.webp"></a></div><p>text: 0 added, 1 removed</p><ul class="text"><li class="del">- What's new</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="changelog.1240.left.webp" target="_blank"><img loading="lazy" src="changelog.1240.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="changelog.1240.right.webp" target="_blank"><img loading="lazy" src="changelog.1240.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="changelog.1240.diff.webp" target="_blank"><img loading="lazy" src="changelog.1240.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="changelog.1240.right.webp">
+    <div class="l"><img loading="lazy" src="changelog.1240.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="product-embedded-analytics.1440">
+  <header>
+    <span class="score good">99.99%</span>
+    <code>/product/embedded-analytics</code>
+    <span class="w">@1440px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (471)</span>
+    
+    <span class="px">186 / 19,558,080 px differ</span>
+  </header>
+  <div class="findings"><p>1 region(s)</p><ul class="regions"><li>80×32 at (1072,64) — 186 px<span class="dom"> — +div.nav-actions.flex &quot;Log in Get started&quot;; a[href=&quot;https://github.com/metabase/metabase?use_case=ea&quot;].nav-github-stars.mr-4 display none→flex, width auto→81.9688px</span></li></ul><div class="crops"><a class="crop" href="product-embedded-analytics.1440.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="product-embedded-analytics.1440.c1.webp"></a></div><p>text: 0 added, 1 removed</p><ul class="text"><li class="del">- 50k</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="product-embedded-analytics.1440.left.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.1440.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="product-embedded-analytics.1440.right.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.1440.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="product-embedded-analytics.1440.diff.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.1440.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="product-embedded-analytics.1440.right.webp">
+    <div class="l"><img loading="lazy" src="product-embedded-analytics.1440.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="features-metabase-ai.1440">
+  <header>
+    <span class="score good">99.99%</span>
+    <code>/features/metabase-ai</code>
+    <span class="w">@1440px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (472)</span>
+    
+    <span class="px">186 / 25,303,680 px differ</span>
+  </header>
+  <div class="findings"><p>1 region(s)</p><ul class="regions"><li>80×32 at (1072,64) — 186 px<span class="dom"> — +div.nav-actions.flex &quot;Log in Get started&quot;; a[href=&quot;https://github.com/metabase/metabase&quot;].nav-github-stars.mr-4 display none→flex, width auto→81.9688px</span></li></ul><div class="crops"><a class="crop" href="features-metabase-ai.1440.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="features-metabase-ai.1440.c1.webp"></a></div><p>text: 0 added, 1 removed</p><ul class="text"><li class="del">- 50k</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="features-metabase-ai.1440.left.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.1440.left.0.webp"><img loading="lazy" src="features-metabase-ai.1440.left.1.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="features-metabase-ai.1440.right.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.1440.right.0.webp"><img loading="lazy" src="features-metabase-ai.1440.right.1.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="features-metabase-ai.1440.diff.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.1440.diff.0.webp"><img loading="lazy" src="features-metabase-ai.1440.diff.1.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="features-metabase-ai.1440.right.0.webp"><img loading="lazy" src="features-metabase-ai.1440.right.1.webp">
+    <div class="l"><img loading="lazy" src="features-metabase-ai.1440.left.0.webp"><img loading="lazy" src="features-metabase-ai.1440.left.1.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="changelog.1440">
+  <header>
+    <span class="score good">99.99%</span>
+    <code>/changelog</code>
+    <span class="w">@1440px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (14)</span>
+    
+    <span class="px">186 / 2,580,480 px differ</span>
+  </header>
+  <div class="findings"><p>1 region(s)</p><ul class="regions"><li>80×32 at (1072,64) — 186 px<span class="dom"> — +div.nav-actions.flex &quot;Log in Get started&quot;; a[href=&quot;https://github.com/metabase/metabase&quot;].nav-github-stars.mr-4 display none→flex, width auto→81.9688px</span></li></ul><div class="crops"><a class="crop" href="changelog.1440.c1.webp" target="_blank" title="region, left on top"><img loading="lazy" src="changelog.1440.c1.webp"></a></div><p>text: 0 added, 1 removed</p><ul class="text"><li class="del">- 50k</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="changelog.1440.left.webp" target="_blank"><img loading="lazy" src="changelog.1440.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="changelog.1440.right.webp" target="_blank"><img loading="lazy" src="changelog.1440.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="changelog.1440.diff.webp" target="_blank"><img loading="lazy" src="changelog.1440.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="changelog.1440.right.webp">
+    <div class="l"><img loading="lazy" src="changelog.1440.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="index.375">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (32)</span>
+    
+    <span class="px">0 / 5,668,125 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="index.375.left.webp" target="_blank"><img loading="lazy" src="index.375.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="index.375.left.webp" target="_blank"><img loading="lazy" src="index.375.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.375.left.webp">
+    <div class="l"><img loading="lazy" src="index.375.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1100">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/</code>
+    <span class="w">@1100px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (468)</span>
+    
+    <span class="px">0 / 12,378,300 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="index.1100.left.webp" target="_blank"><img loading="lazy" src="index.1100.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="index.1100.left.webp" target="_blank"><img loading="lazy" src="index.1100.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1100.left.webp">
+    <div class="l"><img loading="lazy" src="index.1100.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/</code>
+    <span class="w">@1600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (474)</span>
+    
+    <span class="px">0 / 16,616,000 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="index.1600.left.webp" target="_blank"><img loading="lazy" src="index.1600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="index.1600.left.webp" target="_blank"><img loading="lazy" src="index.1600.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1600.left.webp">
+    <div class="l"><img loading="lazy" src="index.1600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="product-embedded-analytics.375">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/product/embedded-analytics</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (32)</span>
+    
+    <span class="px">0 / 7,404,750 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="product-embedded-analytics.375.left.0.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.375.left.0.webp"><img loading="lazy" src="product-embedded-analytics.375.left.1.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="product-embedded-analytics.375.left.0.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.375.left.0.webp"><img loading="lazy" src="product-embedded-analytics.375.left.1.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="product-embedded-analytics.375.left.0.webp"><img loading="lazy" src="product-embedded-analytics.375.left.1.webp">
+    <div class="l"><img loading="lazy" src="product-embedded-analytics.375.left.0.webp"><img loading="lazy" src="product-embedded-analytics.375.left.1.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="product-embedded-analytics.600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/product/embedded-analytics</code>
+    <span class="w">@600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (32)</span>
+    
+    <span class="px">0 / 10,279,200 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="product-embedded-analytics.600.left.0.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.600.left.0.webp"><img loading="lazy" src="product-embedded-analytics.600.left.1.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="product-embedded-analytics.600.left.0.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.600.left.0.webp"><img loading="lazy" src="product-embedded-analytics.600.left.1.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="product-embedded-analytics.600.left.0.webp"><img loading="lazy" src="product-embedded-analytics.600.left.1.webp">
+    <div class="l"><img loading="lazy" src="product-embedded-analytics.600.left.0.webp"><img loading="lazy" src="product-embedded-analytics.600.left.1.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="product-embedded-analytics.1100">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/product/embedded-analytics</code>
+    <span class="w">@1100px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (468)</span>
+    
+    <span class="px">0 / 14,950,100 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="product-embedded-analytics.1100.left.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.1100.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="product-embedded-analytics.1100.left.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.1100.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="product-embedded-analytics.1100.left.webp">
+    <div class="l"><img loading="lazy" src="product-embedded-analytics.1100.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="product-embedded-analytics.1240">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/product/embedded-analytics</code>
+    <span class="w">@1240px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (468)</span>
+    
+    <span class="px">0 / 16,567,640 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="product-embedded-analytics.1240.left.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.1240.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="product-embedded-analytics.1240.left.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.1240.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="product-embedded-analytics.1240.left.webp">
+    <div class="l"><img loading="lazy" src="product-embedded-analytics.1240.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="product-embedded-analytics.1600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/product/embedded-analytics</code>
+    <span class="w">@1600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (474)</span>
+    
+    <span class="px">0 / 21,731,200 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="product-embedded-analytics.1600.left.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.1600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="product-embedded-analytics.1600.left.webp" target="_blank"><img loading="lazy" src="product-embedded-analytics.1600.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="product-embedded-analytics.1600.left.webp">
+    <div class="l"><img loading="lazy" src="product-embedded-analytics.1600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="features-metabase-ai.375">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/features/metabase-ai</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (32)</span>
+    
+    <span class="px">0 / 6,742,875 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="features-metabase-ai.375.left.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.375.left.0.webp"><img loading="lazy" src="features-metabase-ai.375.left.1.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="features-metabase-ai.375.left.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.375.left.0.webp"><img loading="lazy" src="features-metabase-ai.375.left.1.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="features-metabase-ai.375.left.0.webp"><img loading="lazy" src="features-metabase-ai.375.left.1.webp">
+    <div class="l"><img loading="lazy" src="features-metabase-ai.375.left.0.webp"><img loading="lazy" src="features-metabase-ai.375.left.1.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="features-metabase-ai.600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/features/metabase-ai</code>
+    <span class="w">@600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (32)</span>
+    
+    <span class="px">0 / 10,453,200 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="features-metabase-ai.600.left.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.600.left.0.webp"><img loading="lazy" src="features-metabase-ai.600.left.1.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="features-metabase-ai.600.left.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.600.left.0.webp"><img loading="lazy" src="features-metabase-ai.600.left.1.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="features-metabase-ai.600.left.0.webp"><img loading="lazy" src="features-metabase-ai.600.left.1.webp">
+    <div class="l"><img loading="lazy" src="features-metabase-ai.600.left.0.webp"><img loading="lazy" src="features-metabase-ai.600.left.1.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="features-metabase-ai.1100">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/features/metabase-ai</code>
+    <span class="w">@1100px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (479)</span>
+    
+    <span class="px">0 / 17,700,100 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="features-metabase-ai.1100.left.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.1100.left.0.webp"><img loading="lazy" src="features-metabase-ai.1100.left.1.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="features-metabase-ai.1100.left.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.1100.left.0.webp"><img loading="lazy" src="features-metabase-ai.1100.left.1.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="features-metabase-ai.1100.left.0.webp"><img loading="lazy" src="features-metabase-ai.1100.left.1.webp">
+    <div class="l"><img loading="lazy" src="features-metabase-ai.1100.left.0.webp"><img loading="lazy" src="features-metabase-ai.1100.left.1.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="features-metabase-ai.1240">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/features/metabase-ai</code>
+    <span class="w">@1240px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (468)</span>
+    
+    <span class="px">0 / 20,760,080 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="features-metabase-ai.1240.left.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.1240.left.0.webp"><img loading="lazy" src="features-metabase-ai.1240.left.1.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="features-metabase-ai.1240.left.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.1240.left.0.webp"><img loading="lazy" src="features-metabase-ai.1240.left.1.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="features-metabase-ai.1240.left.0.webp"><img loading="lazy" src="features-metabase-ai.1240.left.1.webp">
+    <div class="l"><img loading="lazy" src="features-metabase-ai.1240.left.0.webp"><img loading="lazy" src="features-metabase-ai.1240.left.1.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="features-metabase-ai.1600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/features/metabase-ai</code>
+    <span class="w">@1600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (474)</span>
+    
+    <span class="px">0 / 28,115,200 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="features-metabase-ai.1600.left.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.1600.left.0.webp"><img loading="lazy" src="features-metabase-ai.1600.left.1.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="features-metabase-ai.1600.left.0.webp" target="_blank"><img loading="lazy" src="features-metabase-ai.1600.left.0.webp"><img loading="lazy" src="features-metabase-ai.1600.left.1.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="features-metabase-ai.1600.left.0.webp"><img loading="lazy" src="features-metabase-ai.1600.left.1.webp">
+    <div class="l"><img loading="lazy" src="features-metabase-ai.1600.left.0.webp"><img loading="lazy" src="features-metabase-ai.1600.left.1.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="pricing.375">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/pricing</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (32)</span>
+    
+    <span class="px">0 / 3,066,375 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="pricing.375.left.webp" target="_blank"><img loading="lazy" src="pricing.375.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="pricing.375.left.webp" target="_blank"><img loading="lazy" src="pricing.375.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="pricing.375.left.webp">
+    <div class="l"><img loading="lazy" src="pricing.375.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="pricing.1100">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/pricing</code>
+    <span class="w">@1100px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (468)</span>
+    
+    <span class="px">0 / 5,425,200 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="pricing.1100.left.webp" target="_blank"><img loading="lazy" src="pricing.1100.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="pricing.1100.left.webp" target="_blank"><img loading="lazy" src="pricing.1100.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="pricing.1100.left.webp">
+    <div class="l"><img loading="lazy" src="pricing.1100.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="pricing.1600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/pricing</code>
+    <span class="w">@1600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (474)</span>
+    
+    <span class="px">0 / 7,737,600 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="pricing.1600.left.webp" target="_blank"><img loading="lazy" src="pricing.1600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="pricing.1600.left.webp" target="_blank"><img loading="lazy" src="pricing.1600.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="pricing.1600.left.webp">
+    <div class="l"><img loading="lazy" src="pricing.1600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="blog-metabase-doesnt-use-php.375">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/blog/metabase-doesnt-use-php</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (32)</span>
+    
+    <span class="px">0 / 2,770,125 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="blog-metabase-doesnt-use-php.375.left.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.375.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="blog-metabase-doesnt-use-php.375.left.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.375.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="blog-metabase-doesnt-use-php.375.left.webp">
+    <div class="l"><img loading="lazy" src="blog-metabase-doesnt-use-php.375.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="blog-metabase-doesnt-use-php.1100">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/blog/metabase-doesnt-use-php</code>
+    <span class="w">@1100px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (468)</span>
+    
+    <span class="px">0 / 5,329,500 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="blog-metabase-doesnt-use-php.1100.left.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1100.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="blog-metabase-doesnt-use-php.1100.left.webp" target="_blank"><img loading="lazy" src="blog-metabase-doesnt-use-php.1100.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="blog-metabase-doesnt-use-php.1100.left.webp">
+    <div class="l"><img loading="lazy" src="blog-metabase-doesnt-use-php.1100.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="learn-metabase-basics-getting-started-create-dashboards.375">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/learn/metabase-basics/getting-started/create-dashboards</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (10)</span>
+    
+    <span class="px">0 / 1,367,250 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.375.left.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.375.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.375.left.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.375.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.375.left.webp">
+    <div class="l"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.375.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="learn-metabase-basics-getting-started-create-dashboards.1100">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/learn/metabase-basics/getting-started/create-dashboards</code>
+    <span class="w">@1100px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (10)</span>
+    
+    <span class="px">0 / 2,280,300 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1100.left.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1100.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1100.left.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1100.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1100.left.webp">
+    <div class="l"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1100.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="learn-metabase-basics-getting-started-create-dashboards.1600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/learn/metabase-basics/getting-started/create-dashboards</code>
+    <span class="w">@1600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 3,344,000 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1600.left.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="learn-metabase-basics-getting-started-create-dashboards.1600.left.webp" target="_blank"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1600.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1600.left.webp">
+    <div class="l"><img loading="lazy" src="learn-metabase-basics-getting-started-create-dashboards.1600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="changelog.375">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/changelog</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (11)</span>
+    
+    <span class="px">0 / 1,158,750 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="changelog.375.left.webp" target="_blank"><img loading="lazy" src="changelog.375.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="changelog.375.left.webp" target="_blank"><img loading="lazy" src="changelog.375.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="changelog.375.left.webp">
+    <div class="l"><img loading="lazy" src="changelog.375.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="changelog.600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/changelog</code>
+    <span class="w">@600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (22)</span>
+    
+    <span class="px">0 / 1,195,800 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="changelog.600.left.webp" target="_blank"><img loading="lazy" src="changelog.600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="changelog.600.left.webp" target="_blank"><img loading="lazy" src="changelog.600.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="changelog.600.left.webp">
+    <div class="l"><img loading="lazy" src="changelog.600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="changelog.1100">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/changelog</code>
+    <span class="w">@1100px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (11)</span>
+    
+    <span class="px">0 / 1,971,200 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="changelog.1100.left.webp" target="_blank"><img loading="lazy" src="changelog.1100.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="changelog.1100.left.webp" target="_blank"><img loading="lazy" src="changelog.1100.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="changelog.1100.left.webp">
+    <div class="l"><img loading="lazy" src="changelog.1100.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="changelog.1600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/changelog</code>
+    <span class="w">@1600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (17)</span>
+    
+    <span class="px">0 / 2,867,200 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="changelog.1600.left.webp" target="_blank"><img loading="lazy" src="changelog.1600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="changelog.1600.left.webp" target="_blank"><img loading="lazy" src="changelog.1600.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="changelog.1600.left.webp">
+    <div class="l"><img loading="lazy" src="changelog.1600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="upgrade.375">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/upgrade</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (363)</span>
+    
+    <span class="px">0 / 3,269,250 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="upgrade.375.left.webp" target="_blank"><img loading="lazy" src="upgrade.375.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="upgrade.375.left.webp" target="_blank"><img loading="lazy" src="upgrade.375.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="upgrade.375.left.webp">
+    <div class="l"><img loading="lazy" src="upgrade.375.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="upgrade.1100">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/upgrade</code>
+    <span class="w">@1100px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (799)</span>
+    
+    <span class="px">0 / 5,722,200 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="upgrade.1100.left.webp" target="_blank"><img loading="lazy" src="upgrade.1100.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="upgrade.1100.left.webp" target="_blank"><img loading="lazy" src="upgrade.1100.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="upgrade.1100.left.webp">
+    <div class="l"><img loading="lazy" src="upgrade.1100.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="upgrade.1600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/upgrade</code>
+    <span class="w">@1600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (805)</span>
+    
+    <span class="px">0 / 7,740,800 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="upgrade.1600.left.webp" target="_blank"><img loading="lazy" src="upgrade.1600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="upgrade.1600.left.webp" target="_blank"><img loading="lazy" src="upgrade.1600.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="upgrade.1600.left.webp">
+    <div class="l"><img loading="lazy" src="upgrade.1600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="events-dataconnect-26.375">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/events/dataconnect-26</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (36)</span>
+    
+    <span class="px">0 / 3,622,125 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="events-dataconnect-26.375.left.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.375.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="events-dataconnect-26.375.left.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.375.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="events-dataconnect-26.375.left.webp">
+    <div class="l"><img loading="lazy" src="events-dataconnect-26.375.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="events-dataconnect-26.1100">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/events/dataconnect-26</code>
+    <span class="w">@1100px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (472)</span>
+    
+    <span class="px">0 / 5,298,700 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="events-dataconnect-26.1100.left.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1100.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="events-dataconnect-26.1100.left.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1100.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="events-dataconnect-26.1100.left.webp">
+    <div class="l"><img loading="lazy" src="events-dataconnect-26.1100.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+<article class="card" id="events-dataconnect-26.1600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/events/dataconnect-26</code>
+    <span class="w">@1600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (478)</span>
+    
+    <span class="px">0 / 7,534,400 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>left</figcaption><a href="events-dataconnect-26.1600.left.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1600.left.webp"></a></figure>
+    <figure><figcaption>right</figcaption><a href="events-dataconnect-26.1600.left.webp" target="_blank"><img loading="lazy" src="events-dataconnect-26.1600.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="events-dataconnect-26.1600.left.webp">
+    <div class="l"><img loading="lazy" src="events-dataconnect-26.1600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: left shot on the left, right shot on the right">
+  </div>
+</article>
+
+
+
+<details>
+  <summary>What was neutralized</summary>
+  <p>Blocked on both sides — analytics, consent, and A/B tooling that would otherwise
+     rewrite the DOM differently on each load:</p>
+  <ul><li><code>**://*.visualwebsiteoptimizer.com/**</code></li><li><code>**://*.googletagmanager.com/**</code></li><li><code>**://*.google-analytics.com/**</code></li><li><code>**://cdn.segment.com/**</code></li><li><code>**://*.intercom.io/**</code></li><li><code>**://*.intercomcdn.com/**</code></li><li><code>**://*.hotjar.com/**</code></li><li><code>**://snap.licdn.com/**</code></li><li><code>**://connect.facebook.net/**</code></li><li><code>**://*.onetrust.com/**</code></li><li><code>**://cdn.cookielaw.org/**</code></li><li><code>**://get.geojs.io/**</code></li><li><code>**://get.geojs.io/**</code></li><li><code>**://*.metabaseapp.com/**</code></li><li><code>**://embedding-demo.metabase.com/**</code></li><li><code>**://embedded-analytics-sdk-demo.metabase.com/**</code></li><li><code>**://people-analytics-embedded-demo.vercel.app/**</code></li><li><code>**://*.fillout.com/**</code></li></ul>
+  <p>Masked, because they drift — painted over on both sides, so they can neither pass
+     nor fail:</p>
+  <ul><li>img[src$=&quot;/dashboard-docs.gif&quot;]: animated GIF hero</li><li>#query-builder: animated GIF poster on a frozen video</li><li>#hero-a: animated GIF poster on a frozen video</li><li>#visualizations: animated GIF poster on a frozen video</li><li>#drill-through: animated GIF poster on a frozen video</li><li>#row-level-permissions: animated GIF poster on a frozen video</li><li>#white-labeling: animated GIF poster on a frozen video</li><li>#hero-a: animated GIF poster on a frozen video</li><li>#drill-through: animated GIF poster on a frozen video</li><li>#row-level-permissions: animated GIF poster on a frozen video</li><li>#hero-a: animated GIF poster on a frozen video</li><li>#visualizations: animated GIF poster on a frozen video</li><li>#drill-through: animated GIF poster on a frozen video</li><li>#white-labeling: animated GIF poster on a frozen video</li><li>#collections: animated GIF poster on a frozen video</li><li>#hero-a: animated GIF poster on a frozen video</li><li>#embedded-visualizations: animated GIF poster on a frozen video</li><li>#embedded-white-labeling: animated GIF poster on a frozen video</li><li>#hero-a: animated GIF poster on a frozen video</li><li>#drill-through: animated GIF poster on a frozen video</li><li>video[poster$=&quot;/drill-through.gif&quot;]: animated GIF poster on a frozen video</li><li>#manage-people-video: animated GIF poster on a frozen video.js player</li><li>#manage-people-video .vjs-poster: video.js poster box, can overflow the player</li><li>#poc-video: animated GIF poster on a frozen video.js player</li><li>#manage-people-video: animated GIF poster on a frozen video.js player</li><li>#click-to-explore-data: animated GIF poster on a frozen video.js player</li><li>img[src$=&quot;/sincera.gif&quot;]: animated GIF in customer tab</li><li>img[src$=&quot;/faros.gif&quot;]: animated GIF in customer tab</li><li>#poc-video .vjs-poster: video.js poster box, can overflow the player</li><li>#manage-people-video .vjs-poster: video.js poster box, can overflow the player</li><li>#click-to-explore-data .vjs-poster: video.js poster box, can overflow the player</li><li>#sandbox: animated GIF poster on a frozen video.js player</li><li>#sincera-video: animated GIF poster on a frozen video.js player</li><li>#sandbox .vjs-poster: video.js poster box, can overflow the player</li><li>#sincera-video .vjs-poster: video.js poster box, can overflow the player</li><li>#poc-video: animated GIF poster on a frozen video.js player</li><li>#manage-people-video: animated GIF poster on a frozen video.js player</li><li>#click-to-explore-data: animated GIF poster on a frozen video.js player</li><li>img[src$=&quot;/sincera.gif&quot;]: animated GIF in customer tab</li><li>img[src$=&quot;/faros.gif&quot;]: animated GIF in customer tab</li><li>#poc-video .vjs-poster: video.js poster box, can overflow the player</li><li>#manage-people-video .vjs-poster: video.js poster box, can overflow the player</li><li>#click-to-explore-data .vjs-poster: video.js poster box, can overflow the player</li><li>#google-sheets: animated GIF poster on a frozen video.js player</li><li>#google-sheets .vjs-poster: video.js poster box, can overflow the player</li><li>#manage-people-video: animated GIF poster on a frozen video.js player</li><li>#row-level-permissions-video: animated GIF poster on a frozen video.js player</li><li>#sincera-video: animated GIF poster on a frozen video.js player</li><li>#manage-people-video .vjs-poster: video.js poster box, can overflow the player</li><li>#row-level-permissions-video .vjs-poster: video.js poster box, can overflow the player</li><li>#sincera-video .vjs-poster: video.js poster box, can overflow the player</li><li>iframes (--mask-media)</li></ul>
+  <p>Pinned on both sides: clock starts at <code>2026-10-30T15:51:00.000Z</code> on every load, a seeded
+     <code>Math.random</code>, timezone <code>UTC</code>, locale
+     <code>en-US</code>, <code>light</code> colour
+     scheme, reduced motion, CSS animations and transitions off, animated images and SVG animations held on their
+     first frame, videos kept from playing with video.js overlays hidden.</p>
+  <p>Unstable pixels — ones that changed between two shots of the same load — are painted
+     magenta on both sides, counted on each card, and excluded from the measurement. A route
+     more than 25% unstable is an error.</p>
+  <p>Magenta is also padding where one page is taller or wider than the other. It counts
+     against the score on purpose — see the height delta on the row.</p>
+</details>
+</main>
