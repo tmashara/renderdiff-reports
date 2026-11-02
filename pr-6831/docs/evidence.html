@@ -1,0 +1,500 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'">
+<title>GRO-1147 docs parity vs 6fbcecd4b</title>
+<style>
+  :root { color-scheme: light dark; --bg:#fff; --fg:#1a1a1a; --mut:#666; --line:#e3e3e3; --card:#fafafa; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181c; --fg:#e8e8e8; --mut:#999; --line:#2c2f36; --card:#1c1f24; } }
+  * { box-sizing: border-box }
+  body { margin:0; padding:2rem; background:var(--bg); color:var(--fg);
+         font:14px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif; }
+  h1 { font-size:1.4rem; margin:0 0 .25rem }
+  h2 { font-size:1.05rem; margin:2.5rem 0 .25rem }
+  .meta { color:var(--mut); font-size:12px; margin:0 0 2rem }
+  .meta code { color:var(--fg) }
+  .blurb { color:var(--mut); margin:.25rem 0 .75rem; max-width:70ch }
+  .agg { margin:.25rem 0 1rem }
+  .good { color:#2e7d32 } .warn { color:#b58900 } .bad { color:#c62828 }
+  .card { border:1px solid var(--line); border-radius:8px; background:var(--card);
+          margin:0 0 1rem; padding:.75rem 1rem 1rem; }
+  .card header { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; margin-bottom:.75rem }
+  .score { font-weight:700; font-variant-numeric:tabular-nums; min-width:4.5rem }
+  .w, .px, .delta, .unstable, .aligned, .hook, .accepted { color:var(--mut); font-size:12px }
+  .findings { font-size:12px; color:var(--mut); margin:0 0 .75rem }
+  .findings p { margin:.25rem 0 0 }
+  .findings ul { margin:.25rem 0; font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace }
+  .crops { display:flex; flex-wrap:wrap; gap:.5rem; margin:.25rem 0 }
+  .crops img { width:auto; max-width:100%; max-height:160px }
+  .findings .add { color:#2e7d32 } .findings .del { color:#c62828 }
+  .unstable { background:rgba(255,0,255,.12); padding:.1rem .4rem; border-radius:4px }
+  .delta { background:rgba(181,137,0,.15); padding:.1rem .4rem; border-radius:4px }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr } }
+  figure { margin:0 }
+  .nodiff { color:var(--mut); margin:0 }
+  figcaption { color:var(--mut); font-size:11px; text-transform:uppercase;
+               letter-spacing:.05em; margin-bottom:.35rem }
+  img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px;
+        background:#fff; display:block }
+  code { font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace }
+  details { margin:1rem 0; color:var(--mut) }
+  ul { margin:.5rem 0; padding-left:1.25rem }
+</style>
+<style>
+  .banner { font-size:1.2rem; font-weight:700; padding:.6rem 1rem; border-radius:8px;
+            border:2px solid currentColor; margin:0 0 .5rem }
+  .verdict { white-space:pre-wrap; border-left:3px solid var(--line); padding-left:1rem }
+  .crops img { max-height:none }
+  .omitted { font-style:italic }
+</style>
+
+<h1>GRO-1147 docs parity vs 6fbcecd4b</h1>
+<p class="meta">
+  left <code>http://localhost:4711</code> vs right <code>http://localhost:4710</code><br>
+  2026-11-05T15:44:45.786Z &middot; renderdiff 0.16.0 &middot;
+  widths 1440, 1152, 896, 704, 375 &middot;
+  threshold none &middot;
+  darwin &middot; chromium 156.0.8078.4
+</p>
+
+<div class="banner bad">Differs</div>
+<p class="blurb">23 shot(s) with unstable pixels</p>
+<p><code>renderdiff: 1 of 36 routes differ (1 of 180 shots), 0 errors, 23 unstable (max 128px), worst 99.99% /docs/latest/embedding/sdk/api@704 — results.json</code></p>
+
+<section><h2>Verdict</h2>
+<div class="verdict">Numbers: 180 shots (36 routes x 5 widths), 0 errors, 0 failed assets, mean 99.99%, 1 shot differing (/docs/latest/embedding/sdk/api @704, 221 px).
+What I saw: the 221 px sit on the text of the cookie pill. Base vs base was clean and three change-vs-base reruns at 704 were clean, so it is per-load noise. computed: 0 findings. dom differs is data-astro-cid values on current pages, plus the breadcrumb class leading space on old pages.
+Not verified: pages outside the sample in pixels (whole-site HTML compare covers them), Scalar pages beyond five scroll offsets, hover on non-interactive elements. The cookie pill was left visible on both sides. Reference: local base build 6fbcecd4b.
+Call: parity.</div>
+</section>
+
+<section><h2>Coverage</h2>
+<details><summary>24 clean route(s)</summary>
+<ul><li><code>/docs/latest</code></li><li><code>/docs/latest/questions/introduction</code></li><li><code>/docs/v0.65/questions/introduction</code></li><li><code>/docs/404</code></li><li><code>/docs/latest/questions/introduction?hide_nav=true</code></li><li><code>/docs/v0.12</code></li><li><code>/docs/v0.30</code></li><li><code>/docs/v0.43</code></li><li><code>/docs/v0.12/data-warehousing</code></li><li><code>/docs/v0.12/users-guide/01-what-is-metabase</code></li><li><code>/docs/v0.30/users-guide/01-what-is-metabase</code></li><li><code>/docs/v0.30/administration-guide/01-managing-databases</code></li><li><code>/docs/v0.30/users-guide/01-what-is-metabase?hide_nav=true</code></li><li><code>/docs/v0.43/?hide_nav=true</code></li><li><code>/docs/latest/embedding/sdk/api/MetabaseProvider</code></li><li><code>/docs/v0.54/embedding/sdk/api</code></li><li><code>/docs/v0.54/embedding/sdk/api/MetabaseProvider</code></li><li><code>/docs/latest/questions/introduction?state=product-menu</code></li><li><code>/docs/latest/questions/introduction?state=resources-menu</code></li><li><code>/docs/latest/questions/introduction?state=hamburger</code></li><li><code>/docs/latest/questions/introduction?state=version-selector</code></li><li><code>/docs/latest/questions/introduction?state=docs-nav</code></li><li><code>/docs/v0.30/users-guide/01-what-is-metabase?state=hamburger</code></li><li><code>/docs/v0.30/users-guide/01-what-is-metabase?state=version-selector</code></li></ul></details>
+
+</section>
+
+
+
+<section><h2>Computed styles</h2><pre class="computed">computed: 0 findings; dom identical on 4 of 36 route(s), differs /docs/latest (167) /docs/v0.65 (167) /docs/v0.44 (167) /docs/latest/questions/introduction (167) /docs/latest/questions/query-builder/expressions/case (167) /docs/v0.65/questions/introduction (167) /docs/v0.65/questions/visualizations/visualizing-results (167) /docs/v0.44/questions/sharing/answers (167) /docs/all (167) /docs/404 (167) /docs/latest/questions/introduction?hide_nav=true (4) /docs/v0.12 (167) /docs/v0.30 (167) /docs/v0.43 (167) /docs/v0.12/data-warehousing (167) /docs/v0.12/users-guide/01-what-is-metabase (167) /docs/v0.30/users-guide/01-what-is-metabase (167) /docs/v0.30/administration-guide/01-managing-databases (167) /docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk (168) /docs/v0.30/users-guide/01-what-is-metabase?hide_nav=true (3) /docs/v0.43/?hide_nav=true (3) /docs/latest/questions/introduction?state=product-menu (178) /docs/latest/questions/introduction?state=resources-menu (167) /docs/latest/questions/introduction?state=hamburger (167) /docs/latest/questions/introduction?state=version-selector (167) /docs/latest/questions/introduction?state=search (168) /docs/latest/questions/introduction?state=docs-nav (167) /docs/latest/questions/introduction?state=toc (169) /docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=product-menu (167) /docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-menu (167) /docs/v0.30/users-guide/01-what-is-metabase?state=hamburger (167) /docs/v0.30/users-guide/01-what-is-metabase?state=version-selector (167), so findings there are hints
+  states: only the first 500 links and controls forced on /docs/latest/embedding/sdk/api@1440 (+164) /docs/latest/embedding/sdk/api@1152 (+164) /docs/latest/embedding/sdk/api@896 (+164) /docs/latest/embedding/sdk/api@704 (+165) /docs/latest/embedding/sdk/api@375 (+165)
+  unmatched /docs/latest/questions/introduction?state=product-menu@1440 +body &gt; div#gdpr-outer-container -body &gt; div.gdpr-cookie-notice
+rules: 13 changed groups, 8 never matched, 3 matched on some shots
+  +Header.CkC0KgAW.css @media (prefers-reduced-motion: no-preference) (5 rules)  matched nothing: /docs/latest@1440,1152,896,704,375 /docs/v0.65@1440,1152,896,704,375 /docs/v0.44@1440,1152,896,704,375 +29 routes
+  -Head.Cmyv7wXI.css @media (prefers-reduced-motion: no-preference) (5 rules)  matched nothing: /docs/latest@1440,1152,896,704,375 /docs/v0.65@1440,1152,896,704,375 /docs/v0.44@1440,1152,896,704,375 +29 routes
+  -atelier-sulphurpool-light.min.css (19 rules)  matched nothing: /docs/v0.12@1440,1152,896,704,375 /docs/v0.30@1440,1152,896,704,375 /docs/v0.43@1440,1152,896,704,375 +11 routes
+  -NewDocsLayout.BkIRFBf1.css (79 rules)  matched nothing: /docs/v0.12@1440,1152,896,704,375 /docs/v0.30@1440,1152,896,704,375 /docs/v0.43@1440,1152,896,704,375 +11 routes
+  -NewDocsLayout.BkIRFBf1.css @starting-style (1 rule)  matched nothing: /docs/v0.12@1440,1152,896,704,375 /docs/v0.30@1440,1152,896,704,375 /docs/v0.43@1440,1152,896,704,375 +11 routes
+  -NewDocsLayout.BkIRFBf1.css @supports not selector(:popover-open) (3 rules)  matched nothing: /docs/v0.12@1440,1152,896,704,375 /docs/v0.30@1440,1152,896,704,375 /docs/v0.43@1440,1152,896,704,375 +11 routes
+  -NewDocsLayout.BkIRFBf1.css @media (width &gt;= 64rem) (2 rules)  matched nothing: /docs/v0.12@1440,1152,896,704,375 /docs/v0.30@1440,1152,896,704,375 /docs/v0.43@1440,1152,896,704,375 +11 routes
+  -NewDocsLayout.BkIRFBf1.css @media (width &gt;= 1200px) (1 rule)  matched nothing: /docs/v0.12@1440,1152,896,704,375 /docs/v0.30@1440,1152,896,704,375 /docs/v0.43@1440,1152,896,704,375 +11 routes
+  +Header.CkC0KgAW.css @media (width &lt; 64rem) (8 rules)  matched /docs/latest@896,704,375 /docs/v0.65@896,704,375 /docs/v0.44@896,704,375 +14 routes; nothing /docs/latest@1440,1152 /docs/v0.65@1440,1152 /docs/v0.44@1440,1152 +29 routes
+  -Head.Cmyv7wXI.css @media (width &lt; 64rem) (8 rules)  matched /docs/latest@896,704,375 /docs/v0.65@896,704,375 /docs/v0.44@896,704,375 +14 routes; nothing /docs/latest@1440,1152 /docs/v0.65@1440,1152 /docs/v0.44@1440,1152 +29 routes
+  -NewDocsLayout.BkIRFBf1.css @media (width &lt; 64rem) (22 rules)  matched /docs/v0.12@896,704,375 /docs/v0.30@896,704,375 /docs/v0.43@896,704,375 +11 routes; nothing /docs/v0.12@1440,1152 /docs/v0.30@1440,1152 /docs/v0.43@1440,1152 +11 routes</pre></section>
+
+<section><h2>Not clean</h2><article class="card">
+  <header>
+    <span class="score good">99.99%</span>
+    <code>/docs/latest/embedding/sdk/api</code>
+    <span class="w">@704px</span>
+    
+    
+    
+    
+    
+    
+    
+    <span class="w">dom identical</span>
+    
+    <span class="px">221 / 4,002,944 px differ</span>
+  </header><div class="findings"><p>1 region(s)</p><ul class="regions"><li>112×16 at (192,848) — 221 px<span class="dom"> — p.gdpr-cookie-notice-description; details.tsd-panel-group.tsd-member-group:nth-of-type(5)</span></li></ul><div class="crops"><img src="data:image/webp;base64,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" title="region, left on top"></div></div></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.65</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">96 px unstable</span>
+    
+    
+    <span class="w">dom differs (165)</span>
+    
+    <span class="px">0 / 15,141,888 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.44</code>
+    <span class="w">@896px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 8,141,056 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/query-builder/expressions/case</code>
+    <span class="w">@704px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 11,656,128 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/query-builder/expressions/case</code>
+    <span class="w">@375px</span>
+    
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 7,149,000 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.65/questions/visualizations/visualizing-results</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">84 px unstable</span>
+    
+    
+    <span class="w">dom differs (167)</span>
+    
+    <span class="px">0 / 27,400,320 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.65/questions/visualizations/visualizing-results</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">96 px unstable</span>
+    
+    
+    <span class="w">dom differs (167)</span>
+    
+    <span class="px">0 / 19,062,144 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.44/questions/sharing/answers</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">123 px unstable</span>
+    
+    
+    <span class="w">dom differs (167)</span>
+    
+    <span class="px">0 / 8,064,000 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.44/questions/sharing/answers</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">128 px unstable</span>
+    
+    
+    <span class="w">dom differs (165)</span>
+    
+    <span class="px">0 / 8,213,760 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/all</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">96 px unstable</span>
+    
+    
+    <span class="w">dom differs (165)</span>
+    
+    <span class="px">0 / 4,173,696 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk</code>
+    <span class="w">@1440px</span>
+    
+    
+    
+    
+    <span class="unstable">84 px unstable</span>
+    
+    
+    <span class="w">dom differs (168)</span>
+    
+    <span class="px">0 / 24,639,840 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk</code>
+    <span class="w">@1152px</span>
+    
+    
+    
+    
+    <span class="unstable">96 px unstable</span>
+    
+    
+    <span class="w">dom differs (165)</span>
+    
+    <span class="px">0 / 19,711,872 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk</code>
+    <span class="w">@375px</span>
+    
+    
+    
+    
+    <span class="unstable">37 px unstable</span>
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 7,902,750 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/introduction?state=search</code>
+    <span class="w">@704px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 5,774,912 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/latest/questions/introduction?state=toc</code>
+    <span class="w">@896px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    <span class="unstable">16 px unstable</span>
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 7,538,944 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=product-menu</code>
+    <span class="w">@1440px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    <span class="unstable">84 px unstable</span>
+    
+    
+    <span class="w">dom differs (167)</span>
+    
+    <span class="px">0 / 24,639,840 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=product-menu</code>
+    <span class="w">@1152px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    <span class="unstable">96 px unstable</span>
+    
+    
+    <span class="w">dom differs (165)</span>
+    
+    <span class="px">0 / 19,711,872 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=product-menu</code>
+    <span class="w">@896px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    <span class="unstable">37 px unstable</span>
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 16,271,360 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=product-menu</code>
+    <span class="w">@704px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    <span class="unstable">37 px unstable</span>
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 12,832,512 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=product-menu</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    <span class="unstable">37 px unstable</span>
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 7,902,750 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-menu</code>
+    <span class="w">@1152px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    <span class="unstable">96 px unstable</span>
+    
+    
+    <span class="w">dom differs (165)</span>
+    
+    <span class="px">0 / 19,711,872 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-menu</code>
+    <span class="w">@896px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    <span class="unstable">37 px unstable</span>
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 16,271,360 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-menu</code>
+    <span class="w">@704px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    <span class="unstable">37 px unstable</span>
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 12,832,512 px differ</span>
+  </header></article>
+<article class="card">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-menu</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    <span class="unstable">37 px unstable</span>
+    
+    
+    <span class="w">dom differs (16)</span>
+    
+    <span class="px">0 / 7,902,750 px differ</span>
+  </header></article></section>
+
+
+
+<details>
+  <summary>What was neutralized</summary>
+  <p>Blocked on both sides — analytics, consent, and A/B tooling that would otherwise
+     rewrite the DOM differently on each load:</p>
+  <ul><li><code>**://*.visualwebsiteoptimizer.com/**</code></li><li><code>**://*.googletagmanager.com/**</code></li><li><code>**://*.google-analytics.com/**</code></li><li><code>**://cdn.segment.com/**</code></li><li><code>**://*.intercom.io/**</code></li><li><code>**://*.intercomcdn.com/**</code></li><li><code>**://*.hotjar.com/**</code></li><li><code>**://snap.licdn.com/**</code></li><li><code>**://connect.facebook.net/**</code></li><li><code>**://*.onetrust.com/**</code></li><li><code>**://cdn.cookielaw.org/**</code></li><li><code>**://get.geojs.io/**</code></li><li><code>**://*.sentry-cdn.com/**</code></li><li><code>**://*.sentry.io/**</code></li></ul>
+  <p>Masked, because they drift — painted over on both sides, so they can neither pass
+     nor fail:</p>
+  <ul><li>iframes (--mask-media)</li></ul>
+  <p>Pinned on both sides: clock starts at <code>2026-11-05T15:36:00.000Z</code> on every load, a seeded
+     <code>Math.random</code>, timezone <code>UTC</code>, locale
+     <code>en-US</code>, <code>light</code> colour
+     scheme, reduced motion, CSS animations and transitions off, animated images and SVG animations held on their
+     first frame, videos kept from playing with video.js overlays hidden.</p>
+  <p>Unstable pixels — ones that changed between two shots of the same load — are painted
+     magenta on both sides, counted on each card, and excluded from the measurement. A route
+     more than 25% unstable is an error.</p>
+  <p>Magenta is also padding where one page is taller or wider than the other. It counts
+     against the score on purpose — see the height delta on the row.</p>
+</details>

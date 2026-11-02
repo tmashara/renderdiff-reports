@@ -1,0 +1,1010 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Visual diff</title>
+<style>
+  :root { color-scheme: light dark; --bg:#fff; --fg:#1a1a1a; --mut:#666; --line:#e3e3e3; --card:#fafafa; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181c; --fg:#e8e8e8; --mut:#999; --line:#2c2f36; --card:#1c1f24; } }
+  * { box-sizing: border-box }
+  body { margin:0; padding:2rem; background:var(--bg); color:var(--fg);
+         font:14px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif; }
+  h1 { font-size:1.4rem; margin:0 0 .25rem }
+  h2 { font-size:1.05rem; margin:2.5rem 0 .25rem }
+  .meta { color:var(--mut); font-size:12px; margin:0 0 2rem }
+  .meta code { color:var(--fg) }
+  .blurb { color:var(--mut); margin:.25rem 0 .75rem; max-width:70ch }
+  .agg { margin:.25rem 0 1rem }
+  .good { color:#2e7d32 } .warn { color:#b58900 } .bad { color:#c62828 }
+  .card { border:1px solid var(--line); border-radius:8px; background:var(--card);
+          margin:0 0 1rem; padding:.75rem 1rem 1rem; }
+  .card header { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; margin-bottom:.75rem }
+  .score { font-weight:700; font-variant-numeric:tabular-nums; min-width:4.5rem }
+  .w, .px, .delta, .unstable, .aligned, .hook, .accepted { color:var(--mut); font-size:12px }
+  .findings { font-size:12px; color:var(--mut); margin:0 0 .75rem }
+  .findings p { margin:.25rem 0 0 }
+  .findings ul { margin:.25rem 0; font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace }
+  .crops { display:flex; flex-wrap:wrap; gap:.5rem; margin:.25rem 0 }
+  .crops img { width:auto; max-width:100%; max-height:160px }
+  .findings .add { color:#2e7d32 } .findings .del { color:#c62828 }
+  .unstable { background:rgba(255,0,255,.12); padding:.1rem .4rem; border-radius:4px }
+  .delta { background:rgba(181,137,0,.15); padding:.1rem .4rem; border-radius:4px }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr } }
+  figure { margin:0 }
+  .nodiff { color:var(--mut); margin:0 }
+  figcaption { color:var(--mut); font-size:11px; text-transform:uppercase;
+               letter-spacing:.05em; margin-bottom:.35rem }
+  img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px;
+        background:#fff; display:block }
+  code { font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace }
+  details { margin:1rem 0; color:var(--mut) }
+  ul { margin:.5rem 0; padding-left:1.25rem }
+  figure a img + img, .crop img + img { border-top:0; border-radius:0 }
+  .nodiff { color:var(--mut); font-size:12px }
+</style>
+<style>
+  body { padding:0; display:grid; grid-template-columns:260px minmax(0,1fr) }
+  main { padding:2rem; min-width:0 }
+  .side { position:sticky; top:0; height:100vh; overflow:auto; padding:1rem;
+          border-right:1px solid var(--line); font-size:12px }
+  .side #q { width:100%; padding:.35rem .5rem; margin-bottom:.5rem; font:inherit; color:var(--fg);
+                background:var(--card); border:1px solid var(--line); border-radius:4px }
+  .side ul { list-style:none; padding:0; margin:0 }
+  .side li { padding:.3rem 0; border-bottom:1px solid var(--line) }
+  .side .rt { display:block; overflow-wrap:anywhere; text-decoration:none;
+              font-family:ui-monospace,SFMono-Regular,Menlo,monospace }
+  .ws a, .differs a { margin-right:.4rem; font-variant-numeric:tabular-nums }
+  .summary .counts { display:flex; flex-wrap:wrap; gap:1rem; font-size:15px; margin:0 0 .5rem }
+  .summary .counts a { color:inherit }
+  .summary .differs { font-size:13px; padding-left:0; list-style:none }
+  .card { scroll-margin-top:1rem }
+  .card:target { outline:2px solid #509ee3 }
+  .side label { display:block; margin-bottom:.5rem }
+  body:has(#slide:checked) .grid, body:not(:has(#slide:checked)) .slider { display:none }
+  /* ponytail: both shots fit the card width, so a width delta scales them apart */
+  .slider { display:grid; position:relative }
+  .slider > * { grid-area:1/1; align-self:start }
+  .slider .l { clip-path:inset(0 calc(100% - var(--x)) 0 0) }
+  .slider input { appearance:none; align-self:stretch; width:100%; height:100%; margin:0;
+                  opacity:0; cursor:ew-resize }
+  .slider::after { content:""; position:absolute; top:0; bottom:0; left:var(--x); width:2px;
+                   margin-left:-1px; background:#509ee3; pointer-events:none }
+  .slider:focus-within { outline:2px solid #509ee3 }
+  @media (max-width:900px) {
+    body { display:block }
+    .side { position:static; height:auto; max-height:40vh; border-right:0; border-bottom:1px solid var(--line) }
+  }
+</style>
+<body>
+<nav class="side">
+<label><input id="slide" type="checkbox"> Slider view</label>
+<input id="q" type="search" aria-label="Filter routes" placeholder="Filter 3 route(s)" autocomplete="off">
+<ul id="routes">
+<li data-route="/"><a class="rt warn" href="#index.375">/</a>
+  <span class="ws"><a class="good" href="#index.375" title="100.00%">375</a><a class="warn" href="#index.600" title="84.90%">600</a><a class="warn" href="#index.639" title="84.71%">639</a><a class="good" href="#index.640" title="100.00%">640</a><a class="good" href="#index.767" title="100.00%">767</a><a class="good" href="#index.768" title="100.00%">768</a><a class="warn" href="#index.1000" title="76.88%">1000</a><a class="warn" href="#index.1023" title="77.16%">1023</a><a class="warn" href="#index.1024" title="79.04%">1024</a><a class="warn" href="#index.1060" title="79.41%">1060</a><a class="warn" href="#index.1099" title="79.79%">1099</a><a class="good" href="#index.1100" title="100.00%">1100</a><a class="good" href="#index.1150" title="100.00%">1150</a><a class="warn" href="#index.1279" title="89.92%">1279</a><a class="warn" href="#index.1280" title="94.03%">1280</a><a class="warn" href="#index.1366" title="93.20%">1366</a><a class="warn" href="#index.1440" title="99.87%">1440</a><a class="warn" href="#index.1535" title="99.87%">1535</a><a class="good" href="#index.1536" title="100.00%">1536</a><a class="good" href="#index.1600" title="100.00%">1600</a></span></li>
+<li data-route="/product/data-apps"><a class="rt good" href="#product-data-apps.375">/product/data-apps</a>
+  <span class="ws"><a class="good" href="#product-data-apps.375" title="100.00%">375</a><a class="good" href="#product-data-apps.768" title="100.00%">768</a><a class="good" href="#product-data-apps.1024" title="100.00%">1024</a><a class="good" href="#product-data-apps.1280" title="100.00%">1280</a><a class="good" href="#product-data-apps.1440" title="100.00%">1440</a></span></li>
+<li data-route="/blog/authors/sameer-al-sakran"><a class="rt warn" href="#blog-authors-sameer-al-sakran.600">/blog/authors/sameer-al-sakran</a>
+  <span class="ws"><a class="warn" href="#blog-authors-sameer-al-sakran.600" title="98.60%">600</a><a class="warn" href="#blog-authors-sameer-al-sakran.1530" title="99.99%">1530</a><a class="good" href="#blog-authors-sameer-al-sakran.1600" title="100.00%">1600</a></span></li>
+</ul>
+</nav>
+<script>
+  const q = document.getElementById("q");
+  q.oninput = () => {
+    const v = q.value.trim().toLowerCase();
+    for (const li of document.querySelectorAll("#routes li")) li.hidden = !li.dataset.route.includes(v);
+  };
+  document.addEventListener("input", (e) => {
+    if (e.target.type === "range") e.target.parentNode.style.setProperty("--x", e.target.value + "%");
+  });
+</script>
+<main>
+<h1>Visual diff</h1>
+<p class="meta">
+  current <code>http://localhost:4611</code> vs master <code>http://localhost:4610</code><br>
+  2026-11-04T10:39:26.702Z &middot; chromium 156.0.8078.4
+  
+</p>
+
+<section class="summary">
+<p class="counts">
+  <span><b>3</b> route(s)</span>
+  <span><b>28</b> shot(s) at 375, 600, 639, 640, 767, 768, 1000, 1023, 1024, 1060, 1099, 1100, 1150, 1279, 1280, 1366, 1440, 1535, 1536, 1600, 1530px</span>
+  <span class="warn"><b>14</b> differ</span>
+  <span><b>0</b> error(s)</span>
+  <span><b>0</b> accepted</span>
+  <span><b>0</b> stale accepted</span>
+</p>
+<p>mean <b class="bad">94.19%</b> &middot;
+  worst <b class="bad">76.88%</b>
+  <a href="#index.1000">/ @1000</a></p>
+<ul class="differs"><li><code>/</code> <a class="warn" href="#index.1000" title="76.88%">1000</a> <span class="w">76.88%</span> <a class="warn" href="#index.1023" title="77.16%">1023</a> <span class="w">77.16%</span> <a class="warn" href="#index.1024" title="79.04%">1024</a> <span class="w">79.04%</span> <a class="warn" href="#index.1060" title="79.41%">1060</a> <span class="w">79.41%</span> <a class="warn" href="#index.1099" title="79.79%">1099</a> <span class="w">79.79%</span> <a class="warn" href="#index.639" title="84.71%">639</a> <span class="w">84.71%</span> <a class="warn" href="#index.600" title="84.90%">600</a> <span class="w">84.90%</span> <a class="warn" href="#index.1279" title="89.92%">1279</a> <span class="w">89.92%</span> <a class="warn" href="#index.1366" title="93.20%">1366</a> <span class="w">93.20%</span> <a class="warn" href="#index.1280" title="94.03%">1280</a> <span class="w">94.03%</span> <a class="warn" href="#index.1440" title="99.87%">1440</a> <span class="w">99.87%</span> <a class="warn" href="#index.1535" title="99.87%">1535</a> <span class="w">99.87%</span></li>
+<li><code>/blog/authors/sameer-al-sakran</code> <a class="warn" href="#blog-authors-sameer-al-sakran.600" title="98.60%">600</a> <span class="w">98.60%</span> <a class="warn" href="#blog-authors-sameer-al-sakran.1530" title="99.99%">1530</a> <span class="w">99.99%</span></li></ul>
+<details><summary>Findings: 1 repeated on 2+ routes</summary>
+<pre class="computed">  div.final-cta-illustration-wrap  ×2 routes  /@1535 /blog/authors/sameer-al-sakran@1530</pre></details>
+<details><summary>Computed styles: 367 finding(s)</summary>
+<pre class="computed">computed: 367 findings; dom identical on 0 of 3 route(s), differs / (83) /product/data-apps (653) /blog/authors/sameer-al-sakran (31), so findings there are hints
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(2) &gt; section.up-and-running &gt; div.home-container &gt; div.deploy-grid &gt; article.deploy-card:nth-of-type(2) &gt; div.deploy-card-body &gt; p.deploy-card-text height 78px→104px  /@1000,1023,1280,1366
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(4) &gt; section.embedded-analytics &gt; div.home-container &gt; div.ea-features &gt; div.ea-feature:nth-of-type(2) &gt; h3.ea-feature-title height 25px→50px  /@1000,1023,1280,1366
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(4) &gt; section.embedded-analytics &gt; div.home-container &gt; div.ea-features &gt; div.ea-feature:nth-of-type(3) &gt; h3.ea-feature-title height 25px→50px  /@1000,1023,1280,1366
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(1) &gt; section.hero-revamp &gt; div.hero-media padding-right 64px→0px  /@1024,1060,1099
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(1) &gt; section.hero-revamp &gt; div.hero-media height 702px→1117.94px  /@1024,1060,1099
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(1) &gt; section.hero-revamp &gt; div.hero-media &gt; div.hero-terminal.hero-window position absolute→relative  /@1024,1060,1099
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(1) &gt; section.hero-revamp &gt; div.hero-media &gt; div.hero-terminal.hero-window margin-top 0px→-32px  /@1024,1060,1099
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(1) &gt; section.hero-revamp &gt; div.hero-media &gt; div.hero-terminal.hero-window margin-right 0px→32px  /@1024,1060,1099
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(1) &gt; section.hero-revamp &gt; div.hero-media &gt; div.hero-terminal.hero-window margin-left 0px→auto  /@1024,1060,1099
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(7) &gt; section.love-revamp &gt; div.home-container &gt; div.love-masonry &gt; div.love-column:nth-of-type(1) &gt; figure.love-card:nth-of-type(3) &gt; blockquote.love-quote height 162.75px→186px  /@1279,1280,1366
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(7) &gt; section.love-revamp &gt; div.home-container &gt; div.love-masonry &gt; div.love-column:nth-of-type(3) &gt; figure.love-card.love-card-extra:nth-of-type(1) &gt; blockquote.love-quote height 162.75px→186px  /@1279,1280,1366
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(7) &gt; section.love-revamp &gt; div.home-container &gt; div.love-masonry &gt; div.love-column:nth-of-type(3) &gt; figure.love-card.love-card-extra:nth-of-type(3) &gt; blockquote.love-quote height 93px→116.25px  /@1279,1280,1366
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(7) &gt; section.love-revamp &gt; div.home-container &gt; div.love-masonry &gt; div.love-column:nth-of-type(4) &gt; figure.love-card.love-card-extra:nth-of-type(1) &gt; blockquote.love-quote height 69.75px→93px  /@1279,1280,1366
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(7) &gt; section.love-revamp &gt; div.home-container &gt; div.love-masonry &gt; div.love-column:nth-of-type(4) &gt; figure.love-card.love-card-extra:nth-of-type(2) &gt; blockquote.love-quote height 139.5px→186px  /@1279,1280,1366
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(7) &gt; section.love-revamp &gt; div.home-container &gt; div.love-masonry &gt; div.love-column:nth-of-type(4) &gt; figure.love-card.love-card-extra:nth-of-type(3) &gt; blockquote.love-quote height 46.5px→69.75px  /@1279,1280,1366
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(7) &gt; section.love-revamp &gt; div.home-container &gt; div.love-masonry &gt; div.love-column:nth-of-type(4) &gt; figure.love-card.love-card-extra:nth-of-type(4) &gt; blockquote.love-quote height 162.75px→186px  /@1279,1280,1366
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(1) &gt; section.hero-revamp &gt; div.hero-revamp-content &gt; div.hero-revamp-cta flex-direction column→row  /@600,639
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(1) &gt; section.hero-revamp &gt; div.hero-revamp-content &gt; div.hero-revamp-cta width 178.031px→357.031px  /@600,639
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(1) &gt; section.hero-revamp &gt; div.hero-revamp-content &gt; div.hero-revamp-cta height 100px→44px  /@600,639
+  body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(1) &gt; section.hero-revamp &gt; div.hero-revamp-content &gt; h1.hero-revamp-title font-size 48px→60px  /@1000,1023
+  (+347 more in results.json)
+  unmatched /@375 +body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(2) &gt; section.up-and-running &gt; div.home-container &gt; div.deploy-grid &gt; article.deploy-card:nth-of-type(3) &gt; div.deploy-tile.deploy-tile--seals &gt; a[href=&quot;http://localhost:4610/security&quot;].deploy-seal-stack &gt; span.deploy-badge:nth-of-type(1) +body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(2) &gt; section.up-and-running &gt; div.home-container &gt; div.deploy-grid &gt; article.deploy-card:nth-of-type(3) &gt; div.deploy-tile.deploy-tile--seals &gt; a[href=&quot;http://localhost:4610/security&quot;].deploy-seal-stack &gt; span.deploy-badge:nth-of-type(2) +body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(2) &gt; section.up-and-running &gt; div.home-container &gt; div.deploy-grid &gt; article.deploy-card:nth-of-type(3) &gt; div.deploy-tile.deploy-tile--seals &gt; a[href=&quot;http://localhost:4610/security&quot;].deploy-seal-stack &gt; span.deploy-badge:nth-of-type(3) +body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; div.home-page &gt; div.home-guide:nth-of-type(2) &gt; section.up-and-running &gt; div.home-container &gt; div.deploy-grid &gt; article.deploy-card:nth-of-type(3) &gt; div.deploy-tile.deploy-tile--seals &gt; a[href=&quot;http://localhost:4610/security&quot;].deploy-seal-stack &gt; span.deploy-badge:nth-of-type(4) +body &gt; div.page-scope.site-chrome:nth-of-type(3) &gt; footer.\[\&amp;_svg\]\:align-bottom.\[\&amp;_svg\]\:inline &gt; div.mx-auto.px-6 &gt; div.lg\:pb-10.pb-8 &gt; div.site-footer-col:nth-of-type(2) &gt; div.site-footer-group &gt; ul.flex.flex-col &gt; li:nth-of-type(3) &gt; a[href=&quot;http://localhost:4610/product/data-apps&quot;].flex.font-normal &gt; span.bg-\(--base-color-neutral-95\).font-bold (+9 more)
+  unmatched /product/data-apps@375 +body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; section.bg-\[\#f9fafb\].max-lg\:pt-12 &gt; div.data-apps-grid.mx-auto &gt; div.max-md\:pt-10.pt-14 &gt; div.bg-\(--base-color-neutral-99\).border +body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; section.bg-white.max-lg\:py-16 &gt; div.data-apps-grid.mx-auto &gt; div &gt; div.max-md\:mt-8.mt-12 &gt; div.flex.gap-2\.5 &gt; div.flex.gap-2\.5:nth-of-type(1) &gt; button.bg-\[\#f3f4f6\].border:nth-of-type(1) &gt; span.absolute.bg-brand +body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; section.bg-white.max-lg\:py-16 &gt; div.data-apps-grid.mx-auto &gt; div &gt; div.max-md\:mt-8.mt-12 &gt; div.flex.gap-2\.5 &gt; div.flex.gap-2\.5:nth-of-type(1) &gt; button.bg-\[\#f3f4f6\].border:nth-of-type(2) &gt; span.absolute.bg-brand +body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; section.bg-white.max-lg\:py-16 &gt; div.data-apps-grid.mx-auto &gt; div &gt; div.max-md\:mt-8.mt-12 &gt; div.flex.gap-2\.5 &gt; div.flex.gap-2\.5:nth-of-type(1) &gt; button.bg-\[\#f3f4f6\].border:nth-of-type(3) &gt; span.absolute.bg-brand +body &gt; div.page-scope.tw-scope &gt; div.no-overflow &gt; main &gt; section.bg-white.max-lg\:py-16 &gt; div.data-apps-grid.mx-auto &gt; div &gt; div.max-md\:mt-8.mt-12 &gt; div.flex.gap-2\.5 &gt; div.flex.gap-2\.5:nth-of-type(1) &gt; button.bg-\[\#f3f4f6\].border:nth-of-type(4) &gt; span.absolute.bg-brand (+35 more)
+  unmatched /blog/authors/sameer-al-sakran@600 +body &gt; div.page-scope.site-chrome:nth-of-type(3) &gt; footer.\[\&amp;_svg\]\:align-bottom.\[\&amp;_svg\]\:inline &gt; div.mx-auto.px-6 &gt; div.lg\:pb-10.pb-8 &gt; div.site-footer-col:nth-of-type(2) &gt; div.site-footer-group &gt; ul.flex.flex-col &gt; li:nth-of-type(3) &gt; a[href=&quot;http://localhost:4610/product/data-apps&quot;].flex.font-normal &gt; span.bg-\(--base-color-neutral-95\).font-bold +body &gt; div.page-scope.site-chrome:nth-of-type(3) &gt; footer.\[\&amp;_svg\]\:align-bottom.\[\&amp;_svg\]\:inline &gt; div.mx-auto.px-6 &gt; div.lg\:pb-10.pb-8 &gt; div.site-footer-col:nth-of-type(4) &gt; div.site-footer-group &gt; ul.flex.flex-col &gt; li:nth-of-type(1) &gt; a[href=&quot;http://localhost:4610/jobs&quot;].flex.font-normal &gt; span.bg-\(--base-color-neutral-95\).font-bold +body &gt; div.page-scope.site-chrome:nth-of-type(3) &gt; footer.\[\&amp;_svg\]\:align-bottom.\[\&amp;_svg\]\:inline &gt; div.mx-auto.px-6 &gt; div.border-\(--base-color-neutral-90\).border-t -body &gt; div.page-scope.site-chrome:nth-of-type(3) &gt; footer.\[\&amp;_svg\]\:align-bottom.\[\&amp;_svg\]\:inline &gt; div.mx-auto.px-6 &gt; div.lg\:pb-10.pb-8 &gt; div.site-footer-col:nth-of-type(2) &gt; div.site-footer-group &gt; ul.flex.flex-col &gt; li:nth-of-type(3) &gt; a[href=&quot;http://localhost:4610/product/data-apps&quot;].flex.font-normal &gt; span.bg-\[\#f1f2f4\].font-bold -body &gt; div.page-scope.site-chrome:nth-of-type(3) &gt; footer.\[\&amp;_svg\]\:align-bottom.\[\&amp;_svg\]\:inline &gt; div.mx-auto.px-6 &gt; div.lg\:pb-10.pb-8 &gt; div.site-footer-col:nth-of-type(4) &gt; div.site-footer-group &gt; ul.flex.flex-col &gt; li:nth-of-type(1) &gt; a[href=&quot;http://localhost:4610/jobs&quot;].flex.font-normal &gt; span.bg-\[\#f1f2f4\].font-bold (+1 more)
+rules: 71 changed groups, 15 never matched, 34 matched on some shots
+  +index.CI62PQjT.css @media (width &lt; 64rem) (1 rule)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600
+  +Default.BddZVvHe.css @layer properties @supports (((-webkit-hyphens:none)) and (not (margin-trim:inline))) or ((-moz-orient:inline) and (not (color:rgb(from red r g b)))) (1 rule)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  +global.hVyNK8ma.css @layer utilities @media (hover: hover) (7 rules)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  +global.hVyNK8ma.css @layer utilities @media not all and (width &gt;= 64rem) (19 rules)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  +global.hVyNK8ma.css @layer utilities @media not all and (width &gt;= 48rem) (12 rules)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  +global.hVyNK8ma.css @layer utilities @media not all and (width &gt;= 40rem) (5 rules)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  +global.hVyNK8ma.css @layer utilities @media (width &gt;= 80rem) (3 rules)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  -Default.CYMaRdd6.css @layer properties @supports (((-webkit-hyphens:none)) and (not (margin-trim:inline))) or ((-moz-orient:inline) and (not (color:rgb(from red r g b)))) (1 rule)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  -global.#.css @layer utilities @supports (color:color-mix(in lab, red, red)) (1 rule)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  -global.#.css @layer utilities @media (hover: hover) (10 rules)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  -global.#.css @layer utilities @media not all and (width &gt;= 1099.98px) (7 rules)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  -global.#.css @layer utilities @media not all and (width &gt;= 991.98px) (28 rules)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  -global.#.css @layer utilities @media not all and (width &gt;= 767.98px) (17 rules)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  -global.#.css @layer utilities @media not all and (width &gt;= 575.98px) (5 rules)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  -global.#.css @layer utilities @media (width &gt;= 1200px) (5 rules)  matched nothing: /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600 /product/data-apps@375,768,1024,1280,1440 /blog/authors/sameer-al-sakran@600,1530,1600
+  +index.CI62PQjT.css @media not all and (width &gt;= 48rem) (47 rules)  matched /@375,600,639,640,767; nothing /@768,1000,1023,1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600
+  +index.CI62PQjT.css @media not all and (width &gt;= 64rem) (25 rules)  matched /@375,600,639,640,767,768,1000,1023; nothing /@1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600
+  +index.CI62PQjT.css @media (width &gt;= 64rem) (3 rules)  matched /@1024,1060,1099,1100,1150,1279,1280,1366,1440,1535,1536,1600; nothing /@375,600,639,640,767,768,1000,1023
+  +index.CI62PQjT.css @media (width &gt;= 64rem) and ((width &lt; 80rem)) (6 rules)  matched /@1024,1060,1099,1100,1150,1279; nothing /@375,600,639,640,767,768,1000,1023,1280,1366,1440,1535,1536,1600
+  +index.CI62PQjT.css @media not all and (width &gt;= 80rem) (3 rules)  matched /@375,600,639,640,767,768,1000,1023,1024,1060,1099,1100,1150,1279; nothing /@1280,1366,1440,1535,1536,1600
+  (+29 more in results.json)</pre></details>
+
+</section>
+
+
+<article class="card" id="index.1000">
+  <header>
+    <span class="score bad">76.88%</span>
+    <code>/</code>
+    <span class="w">@1000px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +989px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (72)</span>
+    
+    <span class="px">2,587,572 / 11,194,000 px differ</span>
+  </header>
+  <div class="findings"><p>67 region(s)</p><ul class="regions"><li>1000×768 at (0,4336) — 552,504 px<span class="dom"> — div.home-guide:nth-of-type(4) height 1666.8px→1575.09px; div.ea-stage grid-template-columns 664px→904px, width 664px→904px</span></li><li>1000×1088 at (0,2720) — 290,624 px<span class="dom"> — div.bi-inner y+404; div.home-guide:nth-of-type(2) height 1220px→792px</span></li><li>1000×448 at (0,3856) — 260,443 px<span class="dom"> — #bi-panel-ask y+404; header.ea-header width 664px→904px, height 292px→272px; div.home-guide:nth-of-type(3) y+404; div.home-guide:nth-of-type(2) height 1220px→792px</span></li><li>1000×1568 at (0,5632) — 99,769 px<span class="dom"> — div.home-guide:nth-of-type(5) height 1186.7px→899.391px; div.home-guide:nth-of-type(4) height 1666.8px→1575.09px; div.home-guide:nth-of-type(6) y+783; div.home-page height 10214.8px→9226.03px</span></li><li>976×720 at (16,192) — 74,650 px<span class="dom"> — div.hero-demo y-24; div.hero-revamp-content height 380px→404px</span></li></ul><div class="crops"><a class="crop" href="index.1000.c1.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1000.c1.webp"></a><a class="crop" href="index.1000.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.1000.c2.webp"></a><a class="crop" href="index.1000.c3.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1000.c3.webp"></a></div><p>text: 14 added, 0 removed</p><ul class="text"><li class="add">+ C</li><li class="add">+ Customer 360</li><li class="add">+ /apps/customer-360</li><li class="add">+ Accounts</li><li class="add">+ 64</li><li class="add">+ Renewals</li><li class="add">+ 12</li><li class="add">+ Playbooks</li><li class="add">+ My tasks</li><li class="add">+ 3</li><li class="add">+ Saved views</li><li class="add">+ At-risk enterprise</li><li class="add">+ My book</li><li class="add">+ Renewing in Q1</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1000.left.webp" target="_blank"><img loading="lazy" src="index.1000.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1000.right.webp" target="_blank"><img loading="lazy" src="index.1000.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1000.diff.webp" target="_blank"><img loading="lazy" src="index.1000.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1000.right.webp">
+    <div class="l"><img loading="lazy" src="index.1000.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1023">
+  <header>
+    <span class="score bad">77.16%</span>
+    <code>/</code>
+    <span class="w">@1023px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +989px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (72)</span>
+    
+    <span class="px">2,615,796 / 11,455,554 px differ</span>
+  </header>
+  <div class="findings"><p>59 region(s)</p><ul class="regions"><li>1023×768 at (0,4336) — 553,486 px<span class="dom"> — div.home-guide:nth-of-type(4) height 1666.8px→1575.09px; div.ea-stage grid-template-columns 664px→904px, width 664px→904px</span></li><li>1023×1088 at (0,2720) — 291,226 px<span class="dom"> — div.bi-inner y+404; div.home-guide:nth-of-type(2) height 1220px→792px</span></li><li>1023×448 at (0,3856) — 260,081 px<span class="dom"> — #bi-panel-ask y+404; header.ea-header width 664px→904px, height 292px→272px; div.home-guide:nth-of-type(3) y+404; div.home-guide:nth-of-type(2) height 1220px→792px</span></li><li>1023×1568 at (0,5632) — 100,030 px<span class="dom"> — div.home-guide:nth-of-type(5) height 1186.7px→899.391px; div.home-guide:nth-of-type(4) height 1666.8px→1575.09px; div.home-guide:nth-of-type(6) y+783; div.home-page height 10218.8px→9230.02px</span></li><li>992×720 at (16,192) — 75,986 px<span class="dom"> — div.hero-demo y-24; div.hero-revamp-content height 380px→404px</span></li></ul><div class="crops"><a class="crop" href="index.1023.c1.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1023.c1.webp"></a><a class="crop" href="index.1023.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.1023.c2.webp"></a><a class="crop" href="index.1023.c3.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1023.c3.webp"></a></div><p>text: 14 added, 0 removed</p><ul class="text"><li class="add">+ C</li><li class="add">+ Customer 360</li><li class="add">+ /apps/customer-360</li><li class="add">+ Accounts</li><li class="add">+ 64</li><li class="add">+ Renewals</li><li class="add">+ 12</li><li class="add">+ Playbooks</li><li class="add">+ My tasks</li><li class="add">+ 3</li><li class="add">+ Saved views</li><li class="add">+ At-risk enterprise</li><li class="add">+ My book</li><li class="add">+ Renewing in Q1</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1023.left.webp" target="_blank"><img loading="lazy" src="index.1023.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1023.right.webp" target="_blank"><img loading="lazy" src="index.1023.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1023.diff.webp" target="_blank"><img loading="lazy" src="index.1023.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1023.right.webp">
+    <div class="l"><img loading="lazy" src="index.1023.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1024">
+  <header>
+    <span class="score bad">79.04%</span>
+    <code>/</code>
+    <span class="w">@1024px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -416px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (72)</span>
+    
+    <span class="px">2,117,997 / 10,108,928 px differ</span>
+  </header>
+  <div class="findings"><p>94 region(s)</p><ul class="regions"><li>928×704 at (48,4176) — 378,582 px<span class="dom"> — section.embedded-analytics &gt; div.home-container y-416; div.ea-stage y-416</span></li><li>1024×432 at (0,3680) — 360,146 px<span class="dom"> — div.ea-dashboard y-416; header.ea-header y-416; div.home-guide:nth-of-type(3) y-416; div.home-page height 8647.34px→9063.28px</span></li><li>1024×688 at (0,2400) — 234,163 px<span class="dom"> — div.bi-inner y-416; div.home-guide:nth-of-type(3) y-416; div.home-page height 8647.34px→9063.28px; div.home-guide:nth-of-type(2) y-416; div.home-guide:nth-of-type(1) height 1388px→1803.94px</span></li><li>1024×544 at (0,3120) — 229,812 px<span class="dom"> — header.ea-header y-416; div.home-guide:nth-of-type(3) y-416; div.home-page height 8647.34px→9063.28px; div.bi-panel y-416</span></li><li>1024×1728 at (0,5248) — 119,958 px<span class="dom"> — div.home-guide:nth-of-type(6) y-416; div.home-page height 8647.34px→9063.28px; div.home-guide:nth-of-type(5) y-416</span></li></ul><div class="crops"><a class="crop" href="index.1024.c1.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1024.c1.webp"></a><a class="crop" href="index.1024.c2.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1024.c2.webp"></a><a class="crop" href="index.1024.c3.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1024.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1024.left.webp" target="_blank"><img loading="lazy" src="index.1024.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1024.right.webp" target="_blank"><img loading="lazy" src="index.1024.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1024.diff.webp" target="_blank"><img loading="lazy" src="index.1024.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1024.right.webp">
+    <div class="l"><img loading="lazy" src="index.1024.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1060">
+  <header>
+    <span class="score bad">79.41%</span>
+    <code>/</code>
+    <span class="w">@1060px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -416px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (77)</span>
+    
+    <span class="px">2,155,297 / 10,471,740 px differ</span>
+  </header>
+  <div class="findings"><p>65 region(s)</p><ul class="regions"><li>928×704 at (64,4176) — 378,582 px<span class="dom"> — section.embedded-analytics &gt; div.home-container y-416; div.ea-stage y-416</span></li><li>1060×432 at (0,3680) — 360,186 px<span class="dom"> — div.ea-dashboard y-416; header.ea-header y-416; div.home-guide:nth-of-type(3) y-416; div.home-page height 8653.59px→9069.53px</span></li><li>1060×688 at (0,2400) — 242,906 px<span class="dom"> — div.bi-inner y-416; div.home-guide:nth-of-type(3) y-416; div.home-page height 8653.59px→9069.53px; div.home-guide:nth-of-type(2) y-416; div.home-guide:nth-of-type(1) height 1388px→1803.94px</span></li><li>1060×528 at (0,3136) — 236,861 px<span class="dom"> — header.ea-header y-416; div.home-guide:nth-of-type(3) y-416; div.home-page height 8653.59px→9069.53px; div.bi-panel y-416</span></li><li>1060×1728 at (0,5248) — 118,949 px<span class="dom"> — div.home-guide:nth-of-type(6) y-416; div.home-page height 8653.59px→9069.53px; div.home-guide:nth-of-type(5) y-416</span></li></ul><div class="crops"><a class="crop" href="index.1060.c1.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1060.c1.webp"></a><a class="crop" href="index.1060.c2.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1060.c2.webp"></a><a class="crop" href="index.1060.c3.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1060.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1060.left.webp" target="_blank"><img loading="lazy" src="index.1060.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1060.right.webp" target="_blank"><img loading="lazy" src="index.1060.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1060.diff.webp" target="_blank"><img loading="lazy" src="index.1060.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1060.right.webp">
+    <div class="l"><img loading="lazy" src="index.1060.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1099">
+  <header>
+    <span class="score bad">79.79%</span>
+    <code>/</code>
+    <span class="w">@1099px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -416px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (83)</span>
+    
+    <span class="px">2,194,970 / 10,863,615 px differ</span>
+  </header>
+  <div class="findings"><p>89 region(s)</p><ul class="regions"><li>912×704 at (96,4176) — 379,324 px<span class="dom"> — div.ea-features y-416; div.ea-stage y-416</span></li><li>1099×432 at (0,3680) — 360,602 px<span class="dom"> — div.ea-dashboard y-416; header.ea-header y-416; div.home-guide:nth-of-type(3) y-416; div.home-page height 8660.38px→9076.31px</span></li><li>1099×672 at (0,2400) — 252,832 px<span class="dom"> — div.bi-inner y-416; div.home-guide:nth-of-type(3) y-416; div.home-page height 8660.38px→9076.31px; div.home-guide:nth-of-type(2) y-416; div.home-guide:nth-of-type(1) height 1388px→1803.94px</span></li><li>1099×528 at (0,3136) — 246,582 px<span class="dom"> — header.ea-header y-416; div.home-guide:nth-of-type(3) y-416; div.home-page height 8660.38px→9076.31px; div.bi-panel y-416</span></li><li>1099×1728 at (0,5248) — 117,941 px<span class="dom"> — div.home-guide:nth-of-type(6) y-416; div.home-page height 8660.38px→9076.31px; div.home-guide:nth-of-type(5) y-416</span></li></ul><div class="crops"><a class="crop" href="index.1099.c1.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1099.c1.webp"></a><a class="crop" href="index.1099.c2.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1099.c2.webp"></a><a class="crop" href="index.1099.c3.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1099.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1099.left.webp" target="_blank"><img loading="lazy" src="index.1099.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1099.right.webp" target="_blank"><img loading="lazy" src="index.1099.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1099.diff.webp" target="_blank"><img loading="lazy" src="index.1099.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1099.right.webp">
+    <div class="l"><img loading="lazy" src="index.1099.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.639">
+  <header>
+    <span class="score bad">84.71%</span>
+    <code>/</code>
+    <span class="w">@639px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -1159px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (72)</span>
+    
+    <span class="px">1,209,880 / 7,914,654 px differ</span>
+  </header>
+  <div class="findings"><p>68 region(s)</p><ul class="regions"><li>639×1248 at (0,6096) — 68,041 px<span class="dom"> — div.home-guide:nth-of-type(5) height 1270.42px→1215.53px</span></li><li>608×848 at (16,544) — 62,223 px<span class="dom"> — div.hero-media y+56; div.hero-revamp-content height 390px→334px</span></li><li>608×768 at (16,4592) — 59,925 px<span class="dom"> — div.ea-stage grid-template-columns 583px→484px, width 583px→484px</span></li><li>639×1456 at (0,1616) — 42,570 px<span class="dom"> — div.home-guide:nth-of-type(2) height 1490px→1542px</span></li><li>639×384 at (0,9760) — 26,575 px<span class="dom"> — div.final-cta height 237px→181px; div.home-guide:nth-of-type(7) height 1080.75px→2335px; div.love-column:nth-of-type(2) &gt; figure.love-card:nth-of-type(1) width 583px→232px, height 169.75px→286px</span></li></ul><div class="crops"><a class="crop" href="index.639.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.639.c1.webp"></a><a class="crop" href="index.639.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.639.c2.webp"></a><a class="crop" href="index.639.c3.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.639.c3.webp"></a></div><p>text: 0 added, 22 removed</p><ul class="text"><li class="del">- I'm a big fan of Metabase. Write SQL - show chart.</li><li class="del">- Christopher Winslett</li><li class="del">- Metabase is the most impressive piece of software I’ve used in a long time. If you have data you want to understand give it a try. It’s so easy to spin up</li><li class="del">- Ryan Wilson</li><li class="del">- In terms of BI, there is no second best to Metabase.</li><li class="del">- Roberto</li><li class="del">- just setup a metabase instance at my friends startup and now the ops team is using it left right and centre. The model feature is a game changer. h/t to Metabase for building the most delightful and well thought tool for non tech folks.</li><li class="del">- 0xAHD</li><li class="del">- I’m forgetting how to write SQL queries 🤔 It’s all Metabase’s fault for having such an awesome query editor</li><li class="del">- Carlo Licciardi</li><li class="del">- Metabase is amazing. If you're a founder, especially non technical, get your engineers to install and set it up. It's transformational!</li><li class="del">- Neto</li><li class="del">- TIL about Metabase. Wow, the time we've wasted not using this is incalculable.</li><li class="del">- Derek Morgan</li><li class="del">- I love simple and efficient tools that are straightforward. I've been using Metabase and it is simply lovely</li><li class="del">- Mariana Medeiros</li><li class="del">- Metabase is really really awesome. I love the speed of implementation for new dashboards and reports. Totally awesome. Can't wait for new features. Might as well learn some clojure and contrib myself!</li><li class="del">- Kwamina Dare</li><li class="del">- Metabase proves you can add power without taking away simplicity.</li><li class="del">- Amjad Masad</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.639.left.webp" target="_blank"><img loading="lazy" src="index.639.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.639.right.webp" target="_blank"><img loading="lazy" src="index.639.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.639.diff.webp" target="_blank"><img loading="lazy" src="index.639.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.639.right.webp">
+    <div class="l"><img loading="lazy" src="index.639.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.600">
+  <header>
+    <span class="score bad">84.90%</span>
+    <code>/</code>
+    <span class="w">@600px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -1126px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (71)</span>
+    
+    <span class="px">1,120,987 / 7,427,400 px differ</span>
+  </header>
+  <div class="findings"><p class="failed">fonts -&quot;Roboto Mono&quot;</p><p>54 region(s)</p><ul class="regions"><li>600×1216 at (0,6128) — 67,930 px<span class="dom"> — div.home-guide:nth-of-type(5) height 1250.06px→1215.53px</span></li><li>576×848 at (16,544) — 60,449 px<span class="dom"> — div.hero-media y+56; div.hero-revamp-content height 390px→334px</span></li><li>600×1456 at (0,1616) — 42,271 px<span class="dom"> — div.home-guide:nth-of-type(2) height 1490px→1542px</span></li><li>560×768 at (16,4592) — 39,584 px<span class="dom"> — div.ea-stage grid-template-columns 544px→484px, width 544px→484px</span></li><li>576×1088 at (16,7376) — 35,981 px<span class="dom"> — table.vibes-table y+13</span></li></ul><div class="crops"><a class="crop" href="index.600.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.600.c1.webp"></a><a class="crop" href="index.600.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.600.c2.webp"></a><a class="crop" href="index.600.c3.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.600.c3.webp"></a></div><p>text: 0 added, 22 removed</p><ul class="text"><li class="del">- I'm a big fan of Metabase. Write SQL - show chart.</li><li class="del">- Christopher Winslett</li><li class="del">- Metabase is the most impressive piece of software I’ve used in a long time. If you have data you want to understand give it a try. It’s so easy to spin up</li><li class="del">- Ryan Wilson</li><li class="del">- In terms of BI, there is no second best to Metabase.</li><li class="del">- Roberto</li><li class="del">- just setup a metabase instance at my friends startup and now the ops team is using it left right and centre. The model feature is a game changer. h/t to Metabase for building the most delightful and well thought tool for non tech folks.</li><li class="del">- 0xAHD</li><li class="del">- I’m forgetting how to write SQL queries 🤔 It’s all Metabase’s fault for having such an awesome query editor</li><li class="del">- Carlo Licciardi</li><li class="del">- Metabase is amazing. If you're a founder, especially non technical, get your engineers to install and set it up. It's transformational!</li><li class="del">- Neto</li><li class="del">- TIL about Metabase. Wow, the time we've wasted not using this is incalculable.</li><li class="del">- Derek Morgan</li><li class="del">- I love simple and efficient tools that are straightforward. I've been using Metabase and it is simply lovely</li><li class="del">- Mariana Medeiros</li><li class="del">- Metabase is really really awesome. I love the speed of implementation for new dashboards and reports. Totally awesome. Can't wait for new features. Might as well learn some clojure and contrib myself!</li><li class="del">- Kwamina Dare</li><li class="del">- Metabase proves you can add power without taking away simplicity.</li><li class="del">- Amjad Masad</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.600.left.webp" target="_blank"><img loading="lazy" src="index.600.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.600.right.webp" target="_blank"><img loading="lazy" src="index.600.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.600.diff.webp" target="_blank"><img loading="lazy" src="index.600.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.600.right.webp">
+    <div class="l"><img loading="lazy" src="index.600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1279">
+  <header>
+    <span class="score bad">89.92%</span>
+    <code>/</code>
+    <span class="w">@1279px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +428px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (83)</span>
+    
+    <span class="px">1,224,724 / 12,151,779 px differ</span>
+  </header>
+  <div class="findings"><p class="failed">fonts +&quot;Roboto Mono&quot;</p><p>101 region(s)</p><ul class="regions"><li>1088×1088 at (96,3408) — 175,757 px<span class="dom"> — section.embedded-analytics &gt; div.home-container width 960px→1140px, height 1431.09px→1235.53px</span></li><li>1056×912 at (112,6672) — 75,898 px<span class="dom"> — div.love-masonry display block→flex, align-items normal→flex-start</span></li><li>1279×896 at (0,4976) — 66,641 px<span class="dom"> — div.home-guide:nth-of-type(5) height 899.391px→900.25px; div.home-guide:nth-of-type(6) y+164; div.home-page height 8691.62px→8263.67px</span></li><li>1216×464 at (32,2336) — 48,351 px<span class="dom"> — div.bi-inner y-30</span></li><li>1279×640 at (0,5904) — 46,934 px<span class="dom"> — div.vibes-inner.wrapper y+164</span></li></ul><div class="crops"><a class="crop" href="index.1279.c1.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1279.c1.webp"></a><a class="crop" href="index.1279.c2.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1279.c2.webp"></a><a class="crop" href="index.1279.c3.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1279.c3.webp"></a></div><p>text: 0 added, 14 removed</p><ul class="text"><li class="del">- C</li><li class="del">- Customer 360</li><li class="del">- /apps/customer-360</li><li class="del">- Accounts</li><li class="del">- 64</li><li class="del">- Renewals</li><li class="del">- 12</li><li class="del">- Playbooks</li><li class="del">- My tasks</li><li class="del">- 3</li><li class="del">- Saved views</li><li class="del">- At-risk enterprise</li><li class="del">- My book</li><li class="del">- Renewing in Q1</li></ul></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1279.left.webp" target="_blank"><img loading="lazy" src="index.1279.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1279.right.webp" target="_blank"><img loading="lazy" src="index.1279.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1279.diff.webp" target="_blank"><img loading="lazy" src="index.1279.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1279.right.webp">
+    <div class="l"><img loading="lazy" src="index.1279.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1366">
+  <header>
+    <span class="score bad">93.20%</span>
+    <code>/</code>
+    <span class="w">@1366px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +33px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (83)</span>
+    
+    <span class="px">837,348 / 12,322,686 px differ</span>
+  </header>
+  <div class="findings"><p>83 region(s)</p><ul class="regions"><li>1280×992 at (48,3440) — 275,274 px<span class="dom"> — section.embedded-analytics &gt; div.home-container width 1320px→1140px, height 1271px→1235.53px</span></li><li>1366×992 at (0,4880) — 82,203 px<span class="dom"> — div.home-guide:nth-of-type(5) height 980px→900.25px; div.home-guide:nth-of-type(6) y+149; div.home-page height 8311.73px→8278.77px</span></li><li>1366×320 at (0,8128) — 64,349 px<span class="dom"> — img.final-cta-illustration y+33; div.site-footer-cols.pt-10 y+33</span></li><li>1232×928 at (64,6672) — 57,834 px<span class="dom"> — div.love-masonry width 1264px→1084px, height 878.5px→994.75px</span></li><li>1280×480 at (48,2368) — 51,400 px<span class="dom"> — div.bi-inner y+34</span></li></ul><div class="crops"><a class="crop" href="index.1366.c1.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1366.c1.webp"></a><a class="crop" href="index.1366.c2.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1366.c2.webp"></a><a class="crop" href="index.1366.c3.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1366.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1366.left.webp" target="_blank"><img loading="lazy" src="index.1366.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1366.right.webp" target="_blank"><img loading="lazy" src="index.1366.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1366.diff.webp" target="_blank"><img loading="lazy" src="index.1366.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1366.right.webp">
+    <div class="l"><img loading="lazy" src="index.1366.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1280">
+  <header>
+    <span class="score bad">94.03%</span>
+    <code>/</code>
+    <span class="w">@1280px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height -11px</span>
+    
+    
+    
+    
+    <span class="w">dom differs (83)</span>
+    
+    <span class="px">685,484 / 11,485,440 px differ</span>
+  </header>
+  <div class="findings"><p>76 region(s)</p><ul class="regions"><li>1248×992 at (16,3440) — 208,329 px<span class="dom"> — section.embedded-analytics &gt; div.home-container width 1280px→1140px, height 1258.02px→1235.53px</span></li><li>1280×864 at (0,4832) — 65,658 px<span class="dom"> — section.data-apps &gt; div.home-container width 1280px→1140px, height 818.266px→756.25px; div.home-guide:nth-of-type(5) height 962.266px→900.25px</span></li><li>1280×576 at (0,5904) — 42,982 px<span class="dom"> — div.vibes-inner.wrapper y+105</span></li><li>1248×528 at (16,1680) — 41,909 px<span class="dom"> — div.deploy-grid grid-template-columns 386.656px 386.672px 386.656px→340px 340px 340px, width 1224px→1084px</span></li><li>1280×224 at (0,8128) — 40,944 px<span class="dom"> — img.final-cta-illustration y-11; div.site-footer-cols.pt-10 y-11; div.final-cta-illustration-wrap y-11</span></li></ul><div class="crops"><a class="crop" href="index.1280.c1.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1280.c1.webp"></a><a class="crop" href="index.1280.c2.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1280.c2.webp"></a><a class="crop" href="index.1280.c3.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1280.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1280.left.webp" target="_blank"><img loading="lazy" src="index.1280.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1280.right.webp" target="_blank"><img loading="lazy" src="index.1280.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1280.diff.webp" target="_blank"><img loading="lazy" src="index.1280.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1280.right.webp">
+    <div class="l"><img loading="lazy" src="index.1280.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="blog-authors-sameer-al-sakran.600">
+  <header>
+    <span class="score warn">98.60%</span>
+    <code>/blog/authors/sameer-al-sakran</code>
+    <span class="w">@600px</span>
+    <span class="hook">hook</span>
+    
+    <span class="delta">height +92px</span>
+    
+    
+    
+    <span class="aligned">aligned 99.50%</span>
+    <span class="w">dom differs (30)</span>
+    
+    <span class="px">97,943 / 6,999,600 px differ</span>
+  </header>
+  <div class="findings"><p>2 region(s)</p><ul class="regions"><li>528×252 at (32,10344) — 19,916 px</li><li>600×140 at (0,10636) — 14,421 px</li></ul><div class="crops"><a class="crop" href="blog-authors-sameer-al-sakran.600.c1.webp" target="_blank" title="band, left on top"><img loading="lazy" src="blog-authors-sameer-al-sakran.600.c1.webp"></a><a class="crop" href="blog-authors-sameer-al-sakran.600.c2.webp" target="_blank" title="band, left on top"><img loading="lazy" src="blog-authors-sameer-al-sakran.600.c2.webp"></a><a class="crop" href="blog-authors-sameer-al-sakran.600.c3.webp" target="_blank" title="band, left on top"><img loading="lazy" src="blog-authors-sameer-al-sakran.600.c3.webp"></a></div><ul class="bands"><li>band +4px at y=10318 (left)</li><li>band +4px at y=10329 (left)</li><li>band -8px at y=10371 (master)</li><li>band +16px at y=10384 (left)</li><li>band +14px at y=10407 (left)</li><li>band -4px at y=10393 (master)</li><li>band +2px at y=10449 (left)</li><li>band +4px at y=10476 (left)</li><li>band +16px at y=10513 (left)</li><li>band +8px at y=10577 (left)</li><li>band +4px at y=10596 (left)</li><li>band +4px at y=10611 (left)</li><li>band +28px at y=10737 (left)<span class="dom"> — +div.final-cta-illustration-wrap</span></li></ul></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="blog-authors-sameer-al-sakran.600.left.webp" target="_blank"><img loading="lazy" src="blog-authors-sameer-al-sakran.600.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="blog-authors-sameer-al-sakran.600.right.webp" target="_blank"><img loading="lazy" src="blog-authors-sameer-al-sakran.600.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="blog-authors-sameer-al-sakran.600.diff.webp" target="_blank"><img loading="lazy" src="blog-authors-sameer-al-sakran.600.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="blog-authors-sameer-al-sakran.600.right.webp">
+    <div class="l"><img loading="lazy" src="blog-authors-sameer-al-sakran.600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1440">
+  <header>
+    <span class="score good">99.87%</span>
+    <code>/</code>
+    <span class="w">@1440px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (75)</span>
+    
+    <span class="px">16,225 / 13,008,960 px differ</span>
+  </header>
+  <div class="findings"><p>2 region(s)</p><ul class="regions"><li>16×8096 at (32,64) — 8,115 px<span class="dom"> — div.home-guide:nth-of-type(6)::before background-color rgb(227, 230, 235)→rgba(0, 0, 0, 0), background-image none→linear-gradient(to right, rgb(227, 230, 235) calc(50% - 687px), rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) calc(50% - 673px), rgb(227, 230, 235) 0px, rgb(227, 230, 235) calc(50% + 673px), rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) calc(50% + 687px), rgb(227, 230, 235) 0px); -div.home-guide:nth-of-type(6)::after; div.home-guide:nth-of-type(2)::before background-color rgb(227, 230, 235)→rgba(0, 0, 0, 0), background-image none→linear-gradient(to right, rgb(227, 230, 235) calc(50% - 687px), rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) calc(50% - 673px), rgb(227, 230, 235) 0px, rgb(227, 230, 235) calc(50% + 673px), rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) calc(50% + 687px), rgb(227, 230, 235) 0px); -div.home-guide:nth-of-type(2)::after</span></li><li>16×8096 at (1392,64) — 8,110 px<span class="dom"> — +div.deploy-marquee-set:nth-of-type(1) &gt; a[href=&quot;http://localhost:4611/data-sources/druid&quot;].deploy-source</span></li></ul><div class="crops"><a class="crop" href="index.1440.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.1440.c1.webp"></a><a class="crop" href="index.1440.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.1440.c2.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1440.left.webp" target="_blank"><img loading="lazy" src="index.1440.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1440.right.webp" target="_blank"><img loading="lazy" src="index.1440.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1440.diff.webp" target="_blank"><img loading="lazy" src="index.1440.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1440.right.webp">
+    <div class="l"><img loading="lazy" src="index.1440.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1535">
+  <header>
+    <span class="score good">99.87%</span>
+    <code>/</code>
+    <span class="w">@1535px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (70)</span>
+    
+    <span class="px">16,693 / 13,887,145 px differ</span>
+  </header>
+  <div class="findings"><p>5 region(s)</p><ul class="regions"><li>16×8112 at (80,64) — 8,126 px<span class="dom"> — div.home-guide:nth-of-type(6)::before background-color rgb(227, 230, 235)→rgba(0, 0, 0, 0), background-image none→linear-gradient(to right, rgb(227, 230, 235) calc(50% - 687px), rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) calc(50% - 673px), rgb(227, 230, 235) 0px, rgb(227, 230, 235) calc(50% + 673px), rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) calc(50% + 687px), rgb(227, 230, 235) 0px); -div.home-guide:nth-of-type(6)::after; div.home-guide:nth-of-type(2)::before background-color rgb(227, 230, 235)→rgba(0, 0, 0, 0), background-image none→linear-gradient(to right, rgb(227, 230, 235) calc(50% - 687px), rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) calc(50% - 673px), rgb(227, 230, 235) 0px, rgb(227, 230, 235) calc(50% + 673px), rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) calc(50% + 687px), rgb(227, 230, 235) 0px); -div.home-guide:nth-of-type(2)::after</span></li><li>16×8112 at (1440,64) — 8,122 px<span class="dom"> — +div.deploy-marquee-set:nth-of-type(1) &gt; a[href=&quot;http://localhost:4611/data-sources/druid&quot;].deploy-source</span></li><li>32×80 at (0,8208) — 226 px<span class="dom"> — div.final-cta-illustration-wrap</span></li><li>31×64 at (1504,8272) — 197 px<span class="dom"> — div.final-cta-illustration-wrap</span></li><li>31×16 at (1504,8240) — 22 px<span class="dom"> — div.final-cta-illustration-wrap</span></li></ul><div class="crops"><a class="crop" href="index.1535.c1.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.1535.c1.webp"></a><a class="crop" href="index.1535.c2.webp" target="_blank" title="region, left on the left"><img loading="lazy" src="index.1535.c2.webp"></a><a class="crop" href="index.1535.c3.webp" target="_blank" title="region, current on top"><img loading="lazy" src="index.1535.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1535.left.webp" target="_blank"><img loading="lazy" src="index.1535.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1535.right.webp" target="_blank"><img loading="lazy" src="index.1535.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="index.1535.diff.webp" target="_blank"><img loading="lazy" src="index.1535.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1535.right.webp">
+    <div class="l"><img loading="lazy" src="index.1535.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="blog-authors-sameer-al-sakran.1530">
+  <header>
+    <span class="score good">99.99%</span>
+    <code>/blog/authors/sameer-al-sakran</code>
+    <span class="w">@1530px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (31)</span>
+    
+    <span class="px">287 / 7,666,830 px differ</span>
+  </header>
+  <div class="findings"><p>3 region(s)</p><ul class="regions"><li>16×80 at (0,4176) — 138 px<span class="dom"> — div.final-cta-illustration-wrap</span></li><li>26×64 at (1504,4240) — 136 px<span class="dom"> — div.final-cta-illustration-wrap</span></li><li>26×16 at (1504,4208) — 13 px<span class="dom"> — div.final-cta-illustration-wrap</span></li></ul><div class="crops"><a class="crop" href="blog-authors-sameer-al-sakran.1530.c1.webp" target="_blank" title="region, current on top"><img loading="lazy" src="blog-authors-sameer-al-sakran.1530.c1.webp"></a><a class="crop" href="blog-authors-sameer-al-sakran.1530.c2.webp" target="_blank" title="region, current on top"><img loading="lazy" src="blog-authors-sameer-al-sakran.1530.c2.webp"></a><a class="crop" href="blog-authors-sameer-al-sakran.1530.c3.webp" target="_blank" title="region, current on top"><img loading="lazy" src="blog-authors-sameer-al-sakran.1530.c3.webp"></a></div></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="blog-authors-sameer-al-sakran.1530.left.webp" target="_blank"><img loading="lazy" src="blog-authors-sameer-al-sakran.1530.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="blog-authors-sameer-al-sakran.1530.right.webp" target="_blank"><img loading="lazy" src="blog-authors-sameer-al-sakran.1530.right.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><a href="blog-authors-sameer-al-sakran.1530.diff.webp" target="_blank"><img loading="lazy" src="blog-authors-sameer-al-sakran.1530.diff.webp"></a></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="blog-authors-sameer-al-sakran.1530.right.webp">
+    <div class="l"><img loading="lazy" src="blog-authors-sameer-al-sakran.1530.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.375">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (70)</span>
+    
+    <span class="px">0 / 4,702,500 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.375.left.webp" target="_blank"><img loading="lazy" src="index.375.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.375.left.webp" target="_blank"><img loading="lazy" src="index.375.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.375.left.webp">
+    <div class="l"><img loading="lazy" src="index.375.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.640">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/</code>
+    <span class="w">@640px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (70)</span>
+    
+    <span class="px">0 / 7,978,240 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.640.left.webp" target="_blank"><img loading="lazy" src="index.640.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.640.left.webp" target="_blank"><img loading="lazy" src="index.640.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.640.left.webp">
+    <div class="l"><img loading="lazy" src="index.640.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.767">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/</code>
+    <span class="w">@767px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (70)</span>
+    
+    <span class="px">0 / 9,541,480 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.767.left.webp" target="_blank"><img loading="lazy" src="index.767.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.767.left.webp" target="_blank"><img loading="lazy" src="index.767.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.767.left.webp">
+    <div class="l"><img loading="lazy" src="index.767.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.768">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/</code>
+    <span class="w">@768px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (70)</span>
+    
+    <span class="px">0 / 8,715,264 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.768.left.webp" target="_blank"><img loading="lazy" src="index.768.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.768.left.webp" target="_blank"><img loading="lazy" src="index.768.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.768.left.webp">
+    <div class="l"><img loading="lazy" src="index.768.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1100">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/</code>
+    <span class="w">@1100px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (81)</span>
+    
+    <span class="px">0 / 10,417,000 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1100.left.webp" target="_blank"><img loading="lazy" src="index.1100.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1100.left.webp" target="_blank"><img loading="lazy" src="index.1100.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1100.left.webp">
+    <div class="l"><img loading="lazy" src="index.1100.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1150">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/</code>
+    <span class="w">@1150px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (70)</span>
+    
+    <span class="px">0 / 10,899,700 px differ</span>
+  </header>
+  <div class="findings"><p class="failed">fonts -&quot;Roboto Mono&quot;</p></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1150.left.webp" target="_blank"><img loading="lazy" src="index.1150.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1150.left.webp" target="_blank"><img loading="lazy" src="index.1150.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1150.left.webp">
+    <div class="l"><img loading="lazy" src="index.1150.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1536">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/</code>
+    <span class="w">@1536px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (75)</span>
+    
+    <span class="px">0 / 13,896,192 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1536.left.webp" target="_blank"><img loading="lazy" src="index.1536.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1536.left.webp" target="_blank"><img loading="lazy" src="index.1536.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1536.left.webp">
+    <div class="l"><img loading="lazy" src="index.1536.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="index.1600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/</code>
+    <span class="w">@1600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (81)</span>
+    
+    <span class="px">0 / 14,475,200 px differ</span>
+  </header>
+  <div class="findings"><p class="failed">fonts +&quot;Roboto Mono&quot;</p></div>
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="index.1600.left.webp" target="_blank"><img loading="lazy" src="index.1600.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="index.1600.left.webp" target="_blank"><img loading="lazy" src="index.1600.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="index.1600.left.webp">
+    <div class="l"><img loading="lazy" src="index.1600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="product-data-apps.375">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/product/data-apps</code>
+    <span class="w">@375px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (360)</span>
+    
+    <span class="px">0 / 5,186,250 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="product-data-apps.375.left.webp" target="_blank"><img loading="lazy" src="product-data-apps.375.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="product-data-apps.375.left.webp" target="_blank"><img loading="lazy" src="product-data-apps.375.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="product-data-apps.375.left.webp">
+    <div class="l"><img loading="lazy" src="product-data-apps.375.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="product-data-apps.768">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/product/data-apps</code>
+    <span class="w">@768px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (653)</span>
+    
+    <span class="px">0 / 9,772,032 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="product-data-apps.768.left.webp" target="_blank"><img loading="lazy" src="product-data-apps.768.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="product-data-apps.768.left.webp" target="_blank"><img loading="lazy" src="product-data-apps.768.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="product-data-apps.768.left.webp">
+    <div class="l"><img loading="lazy" src="product-data-apps.768.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="product-data-apps.1024">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/product/data-apps</code>
+    <span class="w">@1024px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    <span class="unstable">33,143 px painted out, vary per load</span>
+    
+    <span class="w">dom differs (653)</span>
+    
+    <span class="px">0 / 12,227,584 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="product-data-apps.1024.left.webp" target="_blank"><img loading="lazy" src="product-data-apps.1024.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="product-data-apps.1024.left.webp" target="_blank"><img loading="lazy" src="product-data-apps.1024.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="product-data-apps.1024.left.webp">
+    <div class="l"><img loading="lazy" src="product-data-apps.1024.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="product-data-apps.1280">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/product/data-apps</code>
+    <span class="w">@1280px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (653)</span>
+    
+    <span class="px">0 / 13,510,400 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="product-data-apps.1280.left.webp" target="_blank"><img loading="lazy" src="product-data-apps.1280.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="product-data-apps.1280.left.webp" target="_blank"><img loading="lazy" src="product-data-apps.1280.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="product-data-apps.1280.left.webp">
+    <div class="l"><img loading="lazy" src="product-data-apps.1280.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="product-data-apps.1440">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/product/data-apps</code>
+    <span class="w">@1440px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (653)</span>
+    
+    <span class="px">0 / 15,235,200 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="product-data-apps.1440.left.webp" target="_blank"><img loading="lazy" src="product-data-apps.1440.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="product-data-apps.1440.left.webp" target="_blank"><img loading="lazy" src="product-data-apps.1440.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="product-data-apps.1440.left.webp">
+    <div class="l"><img loading="lazy" src="product-data-apps.1440.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+<article class="card" id="blog-authors-sameer-al-sakran.1600">
+  <header>
+    <span class="score good">100.00%</span>
+    <code>/blog/authors/sameer-al-sakran</code>
+    <span class="w">@1600px</span>
+    <span class="hook">hook</span>
+    
+    
+    
+    
+    
+    
+    <span class="w">dom differs (31)</span>
+    
+    <span class="px">0 / 8,017,600 px differ</span>
+  </header>
+  
+  <div class="grid">
+    <figure><figcaption>current</figcaption><a href="blog-authors-sameer-al-sakran.1600.left.webp" target="_blank"><img loading="lazy" src="blog-authors-sameer-al-sakran.1600.left.webp"></a></figure>
+    <figure><figcaption>master</figcaption><a href="blog-authors-sameer-al-sakran.1600.left.webp" target="_blank"><img loading="lazy" src="blog-authors-sameer-al-sakran.1600.left.webp"></a></figure>
+    <figure><figcaption>diff</figcaption><p class="nodiff">No differing pixels.</p></figure>
+  </div>
+  <div class="slider" style="--x:50%">
+    <img loading="lazy" src="blog-authors-sameer-al-sakran.1600.left.webp">
+    <div class="l"><img loading="lazy" src="blog-authors-sameer-al-sakran.1600.left.webp"></div>
+    <input type="range" value="50" aria-label="Divider: current on the left, master on the right">
+  </div>
+</article>
+
+
+
+<details>
+  <summary>What was neutralized</summary>
+  <p>Blocked on both sides — analytics, consent, and A/B tooling that would otherwise
+     rewrite the DOM differently on each load:</p>
+  <ul><li><code>**://*.visualwebsiteoptimizer.com/**</code></li><li><code>**://*.googletagmanager.com/**</code></li><li><code>**://*.google-analytics.com/**</code></li><li><code>**://cdn.segment.com/**</code></li><li><code>**://*.intercom.io/**</code></li><li><code>**://*.intercomcdn.com/**</code></li><li><code>**://*.hotjar.com/**</code></li><li><code>**://snap.licdn.com/**</code></li><li><code>**://connect.facebook.net/**</code></li><li><code>**://*.onetrust.com/**</code></li><li><code>**://cdn.cookielaw.org/**</code></li><li><code>**://get.geojs.io/**</code></li><li><code>**://*.metabaseapp.com/**</code></li><li><code>**://embedding-demo.metabase.com/**</code></li><li><code>**://embedded-analytics-sdk-demo.metabase.com/**</code></li><li><code>**://people-analytics-embedded-demo.vercel.app/**</code></li><li><code>**://*.fillout.com/**</code></li></ul>
+  <p>Masked, because they drift — painted over on both sides, so they can neither pass
+     nor fail:</p>
+  <ul><li>img[src$=&quot;/dashboard-docs.gif&quot;]: animated GIF hero</li><li>#query-builder: animated GIF poster on a frozen video</li><li>#hero-a: animated GIF poster on a frozen video</li><li>#visualizations: animated GIF poster on a frozen video</li><li>#drill-through: animated GIF poster on a frozen video</li><li>#row-level-permissions: animated GIF poster on a frozen video</li><li>#white-labeling: animated GIF poster on a frozen video</li><li>#hero-a: animated GIF poster on a frozen video</li><li>#drill-through: animated GIF poster on a frozen video</li><li>#row-level-permissions: animated GIF poster on a frozen video</li><li>#hero-a: animated GIF poster on a frozen video</li><li>#visualizations: animated GIF poster on a frozen video</li><li>#drill-through: animated GIF poster on a frozen video</li><li>#white-labeling: animated GIF poster on a frozen video</li><li>#collections: animated GIF poster on a frozen video</li><li>#hero-a: animated GIF poster on a frozen video</li><li>#embedded-visualizations: animated GIF poster on a frozen video</li><li>#embedded-white-labeling: animated GIF poster on a frozen video</li><li>#hero-a: animated GIF poster on a frozen video</li><li>#drill-through: animated GIF poster on a frozen video</li><li>video[poster$=&quot;/drill-through.gif&quot;]: animated GIF poster on a frozen video</li><li>#manage-people-video: animated GIF poster on a frozen video.js player</li><li>#manage-people-video .vjs-poster: video.js poster box, can overflow the player</li><li>#poc-video: animated GIF poster on a frozen video.js player</li><li>#manage-people-video: animated GIF poster on a frozen video.js player</li><li>#click-to-explore-data: animated GIF poster on a frozen video.js player</li><li>img[src$=&quot;/sincera.gif&quot;]: animated GIF in customer tab</li><li>img[src$=&quot;/faros.gif&quot;]: animated GIF in customer tab</li><li>#poc-video .vjs-poster: video.js poster box, can overflow the player</li><li>#manage-people-video .vjs-poster: video.js poster box, can overflow the player</li><li>#click-to-explore-data .vjs-poster: video.js poster box, can overflow the player</li><li>#sandbox: animated GIF poster on a frozen video.js player</li><li>#sincera-video: animated GIF poster on a frozen video.js player</li><li>#sandbox .vjs-poster: video.js poster box, can overflow the player</li><li>#sincera-video .vjs-poster: video.js poster box, can overflow the player</li><li>#poc-video: animated GIF poster on a frozen video.js player</li><li>#manage-people-video: animated GIF poster on a frozen video.js player</li><li>#click-to-explore-data: animated GIF poster on a frozen video.js player</li><li>img[src$=&quot;/sincera.gif&quot;]: animated GIF in customer tab</li><li>img[src$=&quot;/faros.gif&quot;]: animated GIF in customer tab</li><li>#poc-video .vjs-poster: video.js poster box, can overflow the player</li><li>#manage-people-video .vjs-poster: video.js poster box, can overflow the player</li><li>#click-to-explore-data .vjs-poster: video.js poster box, can overflow the player</li><li>#google-sheets: animated GIF poster on a frozen video.js player</li><li>#google-sheets .vjs-poster: video.js poster box, can overflow the player</li><li>#manage-people-video: animated GIF poster on a frozen video.js player</li><li>#row-level-permissions-video: animated GIF poster on a frozen video.js player</li><li>#sincera-video: animated GIF poster on a frozen video.js player</li><li>#manage-people-video .vjs-poster: video.js poster box, can overflow the player</li><li>#row-level-permissions-video .vjs-poster: video.js poster box, can overflow the player</li><li>#sincera-video .vjs-poster: video.js poster box, can overflow the player</li><li>iframes (--mask-media)</li></ul>
+  <p>Pinned on both sides: clock starts at <code>2026-11-04T10:38:00.000Z</code> on every load, a seeded
+     <code>Math.random</code>, timezone <code>UTC</code>, locale
+     <code>en-US</code>, <code>light</code> colour
+     scheme, reduced motion, CSS animations and transitions off, animated images and SVG animations held on their
+     first frame, videos kept from playing with video.js overlays hidden, every lottie-player held on frame 60.</p>
+  <p>Unstable pixels — ones that changed between two shots of the same load — are painted
+     magenta on both sides, counted on each card, and excluded from the measurement. A route
+     more than 25% unstable is an error.</p>
+  <p>Magenta is also padding where one page is taller or wider than the other. It counts
+     against the score on purpose — see the height delta on the row.</p>
+</details>
+</main>
