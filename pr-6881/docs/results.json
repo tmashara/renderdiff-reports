@@ -1,0 +1,339 @@
+{
+  "meta": {
+    "tool": "renderdiff",
+    "version": "0.17.1",
+    "generatedAt": "2026-11-26T09:24:27.209Z",
+    "left": "http://localhost:4711",
+    "right": "http://localhost:4710",
+    "widths": [
+      1440,
+      1152,
+      896,
+      704,
+      375
+    ],
+    "threshold": null,
+    "clock": "2026-11-26T09:24:00.000Z",
+    "blockUrlPatterns": [
+      "**://*.visualwebsiteoptimizer.com/**",
+      "**://*.googletagmanager.com/**",
+      "**://*.google-analytics.com/**",
+      "**://cdn.segment.com/**",
+      "**://*.intercom.io/**",
+      "**://*.intercomcdn.com/**",
+      "**://*.hotjar.com/**",
+      "**://snap.licdn.com/**",
+      "**://connect.facebook.net/**",
+      "**://*.onetrust.com/**",
+      "**://cdn.cookielaw.org/**",
+      "**://get.geojs.io/**"
+    ],
+    "hideSelectors": [
+      "#onetrust-consent-sdk",
+      ".osano-cm-window",
+      "astro-dev-toolbar",
+      "#astro-dev-toolbar-root",
+      "nextjs-portal",
+      "#cookie-notice"
+    ],
+    "masks": [
+      {
+        "reason": "iframes (--mask-media)"
+      }
+    ],
+    "freezeVideo": true,
+    "platform": "darwin",
+    "storageState": {
+      "left": null,
+      "right": null
+    },
+    "browser": {
+      "name": "chromium",
+      "version": "158.0.8127.18"
+    },
+    "config": "1e381724afad7129",
+    "rightReplayedFrom": null,
+    "rerun": null,
+    "unreadableSheets": {
+      "left": [
+        "https://cdnjs.cloudflare.com/ajax/libs/flexboxgrid/6.3.1/flexboxgrid.min.css",
+        "https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap"
+      ],
+      "right": [
+        "https://cdnjs.cloudflare.com/ajax/libs/flexboxgrid/6.3.1/flexboxgrid.min.css",
+        "https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap"
+      ]
+    }
+  },
+  "results": [
+    {"url":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","left":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","right":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","selector":null,"topLevel":{"before":null,"beforeShot":null},"hook":false,"width":1440,"status":"compared","score":1,"diffPixels":0,"totalPixels":24691680,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":84,"unstableBox":{"x":1175,"y":52,"w":185,"h":42},"images":{"left":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.1440.left.png","right":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.1440.right.png","diff":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.1440.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":166,"changes":[],"truncated":0,"unmatched":{"left":[],"right":[]},"rules":[{"side":"left","sheet":"main.css","conditions":[],"rules":1,"elements":89},{"side":"left","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"left","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"left","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0},{"side":"right","sheet":"main.css","conditions":[],"rules":2,"elements":89},{"side":"right","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"right","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"right","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0}],"prefixes":{"left":[],"right":[]}}},
+    {"url":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","left":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","right":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","selector":null,"topLevel":{"before":null,"beforeShot":null},"hook":false,"width":1152,"status":"compared","score":1,"diffPixels":0,"totalPixels":19753344,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":96,"unstableBox":{"x":844,"y":52,"w":192,"h":42},"images":{"left":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.1152.left.png","right":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.1152.right.png","diff":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.1152.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":164,"changes":[],"truncated":0,"unmatched":{"left":[],"right":[]},"rules":[{"side":"left","sheet":"main.css","conditions":[],"rules":1,"elements":89},{"side":"left","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"left","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"left","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0},{"side":"right","sheet":"main.css","conditions":[],"rules":2,"elements":89},{"side":"right","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"right","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"right","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0}],"prefixes":{"left":[],"right":[]}}},
+    {"url":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","left":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","right":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","selector":null,"topLevel":{"before":null,"beforeShot":null},"hook":false,"width":896,"status":"compared","score":1,"diffPixels":0,"totalPixels":16271360,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":37,"unstableBox":{"x":632,"y":18,"w":95,"h":42},"images":{"left":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.896.left.png","right":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.896.right.png","diff":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.896.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":16,"changes":[],"truncated":0,"unmatched":{"left":[],"right":[]},"rules":[{"side":"left","sheet":"main.css","conditions":[],"rules":1,"elements":89},{"side":"left","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"left","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"left","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0},{"side":"right","sheet":"main.css","conditions":[],"rules":2,"elements":89},{"side":"right","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"right","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"right","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0}],"prefixes":{"left":[],"right":[]}}},
+    {"url":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","left":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","right":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","selector":null,"topLevel":{"before":null,"beforeShot":null},"hook":false,"width":704,"status":"compared","score":1,"diffPixels":0,"totalPixels":12832512,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":37,"unstableBox":{"x":446,"y":18,"w":95,"h":42},"images":{"left":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.704.left.png","right":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.704.right.png","diff":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.704.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":27,"changes":[],"truncated":0,"unmatched":{"left":["body > div#gdpr-outer-container"],"right":["body > div.gdpr-cookie-notice"]},"rules":[{"side":"left","sheet":"main.css","conditions":[],"rules":1,"elements":89},{"side":"left","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"left","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"left","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0},{"side":"right","sheet":"main.css","conditions":[],"rules":2,"elements":89},{"side":"right","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"right","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"right","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0}],"prefixes":{"left":[],"right":[]}}},
+    {"url":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","left":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","right":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk","selector":null,"topLevel":{"before":null,"beforeShot":null},"hook":false,"width":375,"status":"compared","score":1,"diffPixels":0,"totalPixels":7902750,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":55,"unstableBox":{"x":199,"y":18,"w":102,"h":42},"images":{"left":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.375.left.png","right":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.375.right.png","diff":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk.375.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":16,"changes":[],"truncated":0,"unmatched":{"left":[],"right":[]},"rules":[{"side":"left","sheet":"main.css","conditions":[],"rules":1,"elements":89},{"side":"left","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"left","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"left","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0},{"side":"right","sheet":"main.css","conditions":[],"rules":2,"elements":89},{"side":"right","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"right","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"right","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0}],"prefixes":{"left":[],"right":[]}}},
+    {"url":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","left":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","right":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","selector":null,"topLevel":{"before":null,"beforeShot":null},"hook":true,"width":1440,"status":"compared","score":1,"diffPixels":0,"totalPixels":24691680,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":84,"unstableBox":{"x":1175,"y":52,"w":185,"h":42},"images":{"left":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.1440.left.png","right":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.1440.right.png","diff":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.1440.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":168,"changes":[],"truncated":0,"unmatched":{"left":[],"right":[]},"rules":[{"side":"left","sheet":"main.css","conditions":[],"rules":1,"elements":89},{"side":"left","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"left","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"left","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0},{"side":"right","sheet":"main.css","conditions":[],"rules":2,"elements":89},{"side":"right","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"right","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"right","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0}],"prefixes":{"left":[],"right":[]}}},
+    {"url":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","left":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","right":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","selector":null,"topLevel":{"before":null,"beforeShot":null},"hook":true,"width":1152,"status":"compared","score":1,"diffPixels":0,"totalPixels":19753344,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":96,"unstableBox":{"x":844,"y":52,"w":192,"h":42},"images":{"left":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.1152.left.png","right":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.1152.right.png","diff":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.1152.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":168,"changes":[],"truncated":0,"unmatched":{"left":[],"right":[]},"rules":[{"side":"left","sheet":"main.css","conditions":[],"rules":1,"elements":89},{"side":"left","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"left","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"left","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0},{"side":"right","sheet":"main.css","conditions":[],"rules":2,"elements":89},{"side":"right","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"right","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"right","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0}],"prefixes":{"left":[],"right":[]}}},
+    {"url":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","left":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","right":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","selector":null,"topLevel":{"before":null,"beforeShot":null},"hook":true,"width":896,"status":"compared","score":1,"diffPixels":0,"totalPixels":17013248,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":37,"unstableBox":{"x":632,"y":18,"w":95,"h":42},"images":{"left":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.896.left.png","right":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.896.right.png","diff":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.896.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":40,"changes":[],"truncated":0,"unmatched":{"left":[],"right":[]},"rules":[{"side":"left","sheet":"main.css","conditions":[],"rules":1,"elements":89},{"side":"left","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"left","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"left","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0},{"side":"right","sheet":"main.css","conditions":[],"rules":2,"elements":89},{"side":"right","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"right","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"right","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0}],"prefixes":{"left":[],"right":[]}}},
+    {"url":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","left":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","right":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","selector":null,"topLevel":{"before":null,"beforeShot":null},"hook":true,"width":704,"status":"compared","score":1,"diffPixels":0,"totalPixels":13415424,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":37,"unstableBox":{"x":446,"y":18,"w":95,"h":42},"images":{"left":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.704.left.png","right":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.704.right.png","diff":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.704.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":40,"changes":[],"truncated":0,"unmatched":{"left":[],"right":[]},"rules":[{"side":"left","sheet":"main.css","conditions":[],"rules":1,"elements":89},{"side":"left","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"left","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"left","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0},{"side":"right","sheet":"main.css","conditions":[],"rules":2,"elements":89},{"side":"right","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"right","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"right","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0}],"prefixes":{"left":[],"right":[]}}},
+    {"url":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","left":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","right":"/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile","selector":null,"topLevel":{"before":null,"beforeShot":null},"hook":true,"width":375,"status":"compared","score":1,"diffPixels":0,"totalPixels":8213250,"heightDelta":0,"widthDelta":0,"regions":[],"bands":[],"alignedScore":null,"text":{"added":[],"removed":[]},"unstablePixels":0,"images":{"left":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.375.left.png","right":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.375.right.png","diff":"docs-v0_43-operations-guide-running-metabase-on-elastic-beanstalk_state_resources-mobile.375.diff.png"},"crops":[],"accepted":false,"failed":{"left":[],"right":[]},"computed":{"dom":40,"changes":[],"truncated":0,"unmatched":{"left":[],"right":[]},"rules":[{"side":"left","sheet":"main.css","conditions":[],"rules":1,"elements":89},{"side":"left","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"left","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"left","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0},{"side":"right","sheet":"main.css","conditions":[],"rules":2,"elements":89},{"side":"right","sheet":"_..#.css","conditions":[],"rules":8,"elements":76},{"side":"right","sheet":"_..#.css","conditions":["@media (prefers-reduced-motion: no-preference)"],"rules":5,"elements":0},{"side":"right","sheet":"_..#.css","conditions":["@media (width < 64rem)"],"rules":8,"elements":0}],"prefixes":{"left":[],"right":[]}}}
+  ],
+  "summary": {
+    "compared": 10,
+    "errors": 0,
+    "mean": 1,
+    "worst": {
+      "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk",
+      "width": 1440,
+      "score": 1
+    },
+    "belowThreshold": 0,
+    "differing": 0,
+    "accepted": 0,
+    "stale": [],
+    "findings": [],
+    "computed": [],
+    "rules": [
+      {
+        "side": "left",
+        "sheet": "_..#.css",
+        "conditions": [
+          "@media (prefers-reduced-motion: no-preference)"
+        ],
+        "rules": 5,
+        "matched": [],
+        "unmatched": [
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          },
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          }
+        ]
+      },
+      {
+        "side": "left",
+        "sheet": "_..#.css",
+        "conditions": [
+          "@media (width < 64rem)"
+        ],
+        "rules": 8,
+        "matched": [],
+        "unmatched": [
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          },
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          }
+        ]
+      },
+      {
+        "side": "right",
+        "sheet": "_..#.css",
+        "conditions": [
+          "@media (prefers-reduced-motion: no-preference)"
+        ],
+        "rules": 5,
+        "matched": [],
+        "unmatched": [
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          },
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          }
+        ]
+      },
+      {
+        "side": "right",
+        "sheet": "_..#.css",
+        "conditions": [
+          "@media (width < 64rem)"
+        ],
+        "rules": 8,
+        "matched": [],
+        "unmatched": [
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          },
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          }
+        ]
+      },
+      {
+        "side": "left",
+        "sheet": "main.css",
+        "conditions": [],
+        "rules": 1,
+        "matched": [
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          },
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          }
+        ],
+        "unmatched": []
+      },
+      {
+        "side": "left",
+        "sheet": "_..#.css",
+        "conditions": [],
+        "rules": 8,
+        "matched": [
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          },
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          }
+        ],
+        "unmatched": []
+      },
+      {
+        "side": "right",
+        "sheet": "main.css",
+        "conditions": [],
+        "rules": 2,
+        "matched": [
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          },
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          }
+        ],
+        "unmatched": []
+      },
+      {
+        "side": "right",
+        "sheet": "_..#.css",
+        "conditions": [],
+        "rules": 8,
+        "matched": [
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          },
+          {
+            "url": "/docs/v0.43/operations-guide/running-metabase-on-elastic-beanstalk?state=resources-mobile",
+            "widths": [
+              1440,
+              1152,
+              896,
+              704,
+              375
+            ]
+          }
+        ],
+        "unmatched": []
+      }
+    ],
+    "prefixes": []
+  }
+}
